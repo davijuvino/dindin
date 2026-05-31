@@ -139,6 +139,11 @@
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>jcache</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-jcache</artifactId>
+            <version>7.2.12.Final</version>
+        </dependency>
 
         <!-- Configuration processor (kapt) -->
         <dependency>

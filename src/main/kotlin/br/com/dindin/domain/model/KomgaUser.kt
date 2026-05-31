@@ -1,97 +1,65 @@
 package br.com.dindin.domain.model
 
-import br.com.dindin.language.lowerNotBlank
-import com.github.f4b6a3.tsid.TsidCreator
+import jakarta.persistence.*
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 
-import java.time.LocalDateTime
-
-data class KomgaUser(
-  @Email(regexp = ".+@.+\\..+")
+@Entity
+@Table(name = "users")
+class KomgaUser(
+  @Email
   @NotBlank
-  val email: String,
+  @Column(name = "email", nullable = false, unique = true)
+  var email: String,
+
   @NotBlank
-  val password: String?,
-  val roles: Set<UserRoles> = setOf(UserRoles.FILE_DOWNLOAD, UserRoles.PAGE_STREAMING),
-  val sharedLibrariesIds: Set<String> = emptySet(),
-  val sharedAllLibraries: Boolean = true,
-  val restrictions: ContentRestrictions = ContentRestrictions(),
-  val id: String = TsidCreator.getTsid256().toString(),
-  override val createdDate: LocalDateTime = LocalDateTime.now(),
-  override val lastModifiedDate: LocalDateTime = createdDate,
-) : Auditable {
-  @delegate:Transient
-  val isAdmin: Boolean by lazy {
-    roles.contains(UserRoles.ADMIN)
-  }
+  @Column(name = "password", nullable = false)
+  var password: String,
 
-  /**
-   * Return the list of LibraryIds this user is authorized to view, intersecting the provided list of LibraryIds.
-   * @param libraryIds an optional list of LibraryIds to filter on
-   * @return a list of authorised LibraryIds, or null if the user is authorized to see all libraries
-   */
-  fun getAuthorizedLibraryIds(libraryIds: Collection<String>?): Collection<String>? =
-    when {
-      // limited user & libraryIds are specified: filter on provided libraries intersecting user's authorized libraries
-      !canAccessAllLibraries() && libraryIds != null -> libraryIds.intersect(sharedLibrariesIds)
+  @Enumerated(EnumType.STRING)
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(name = "user_role", joinColumns = [JoinColumn(name = "user_id")])
+  var roles: MutableSet<UserRoles> = mutableSetOf()
 
-      // limited user: filter on user's authorized libraries
-      !canAccessAllLibraries() && libraryIds == null -> sharedLibrariesIds
+) : AuditableEntity() {
 
-      // non-limited user & libraryIds are specified: filter on provided libraries
-      libraryIds != null -> libraryIds
+  @Id
+  @GeneratedValue
+  @Column(name = "id", nullable = false)
+  var id: Long = 0
 
-      // non-limited user & no libraryIds specified: return null, meaning no filtering
-      else -> null
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+    name = "user_library_sharing",
+    joinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")],
+    inverseJoinColumns = [JoinColumn(name = "library_id", referencedColumnName = "id")]
+  )
+  var sharedLibraries: MutableSet<Library> = mutableSetOf()
+
+  @NotNull
+  @Column(name = "shared_all_libraries", nullable = false)
+  var sharedAllLibraries: Boolean = true
+    get() = if (roles.contains(UserRoles.ADMIN)) true else field
+    set(value) {
+      field = if (roles.contains(UserRoles.ADMIN)) true else value
     }
 
-  fun canAccessAllLibraries(): Boolean = sharedAllLibraries || isAdmin
+  fun isAdmin() = roles.contains(UserRoles.ADMIN)
 
-  fun canAccessLibrary(libraryId: String): Boolean = canAccessAllLibraries() || sharedLibrariesIds.any { it == libraryId }
-
-  fun canAccessLibrary(library: Library): Boolean = canAccessAllLibraries() || sharedLibrariesIds.any { it == library.id }
-
-  fun isContentAllowed(
-    ageRating: Int? = null,
-    sharingLabels: Set<String> = emptySet(),
-  ): Boolean {
-    val labels = sharingLabels.lowerNotBlank().toSet()
-
-    val ageAllowed =
-      if (restrictions.ageRestriction?.restriction == AllowExclude.ALLOW_ONLY)
-        ageRating != null && ageRating <= restrictions.ageRestriction.age
-      else
-        null
-
-    val labelAllowed =
-      if (restrictions.labelsAllow.isNotEmpty())
-        restrictions.labelsAllow.intersect(labels).isNotEmpty()
-      else
-        null
-
-    val allowed =
-      when {
-        ageAllowed == null -> labelAllowed != false
-        labelAllowed == null -> ageAllowed != false
-        else -> ageAllowed != false || labelAllowed != false
-      }
-    if (!allowed) return false
-
-    val ageDenied =
-      if (restrictions.ageRestriction?.restriction == AllowExclude.EXCLUDE)
-        ageRating != null && ageRating >= restrictions.ageRestriction.age
-      else
-        false
-
-    val labelDenied =
-      if (restrictions.labelsExclude.isNotEmpty())
-        restrictions.labelsExclude.intersect(labels).isNotEmpty()
-      else
-        false
-
-    return !ageDenied && !labelDenied
+  fun canAccessBook(book: Book): Boolean {
+    return sharedAllLibraries || sharedLibraries.any { it.id == book.series.library.id }
   }
 
-  override fun toString(): String = "KomgaUser(createdDate=$createdDate, email='$email', roles=$roles, sharedLibrariesIds=$sharedLibrariesIds, sharedAllLibraries=$sharedAllLibraries, restrictions=$restrictions, id='$id', lastModifiedDate=$lastModifiedDate)"
+  fun canAccessSeries(series: Series): Boolean {
+    return sharedAllLibraries || sharedLibraries.any { it.id == series.library.id }
+  }
+
+  fun canAccessLibrary(library: Library): Boolean {
+    return sharedAllLibraries || sharedLibraries.any { it.id == library.id }
+  }
+}
+
+enum class UserRoles {
+  ADMIN
 }

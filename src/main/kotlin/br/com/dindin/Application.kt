@@ -2,10 +2,14 @@ package br.com.dindin
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing
+import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication
-class DindinApplication
+@EnableScheduling
+@EnableJpaAuditing
+class Application
 
 fun main(args: Array<String>) {
-	runApplication<DindinApplication>(*args)
+	runApplication<Application>(*args)
 }
