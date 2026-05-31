@@ -1,4 +1,4 @@
-package br.com.dindin.domain
+package br.com.dindin.domain.model
 
 import com.github.f4b6a3.tsid.TsidCreator
 import java.net.URL

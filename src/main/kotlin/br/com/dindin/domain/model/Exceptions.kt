@@ -1,4 +1,4 @@
-package org.gotson.komga.domain.model
+package br.com.dindin.domain.model
 
 open class CodedException : Exception {
   val code: String

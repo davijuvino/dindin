@@ -1,0 +1,17 @@
+# Perfil para conectar no Supabase Postgres.
+# Ativar com SPRING_PROFILES_ACTIVE=supabase e exportar as variaveis:
+#   SUPABASE_DB_URL  -> ex.: jdbc:postgresql://aws-0-XX.pooler.supabase.com:6543/postgres?sslmode=require
+#   SUPABASE_DB_USER -> ex.: postgres.<project-ref>
+#   SUPABASE_DB_PASSWORD
+spring:
+  datasource:
+    url: ${SUPABASE_DB_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${SUPABASE_DB_USER}
+    password: ${SUPABASE_DB_PASSWORD}
+  jooq:
+    sql-dialect: POSTGRES
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true

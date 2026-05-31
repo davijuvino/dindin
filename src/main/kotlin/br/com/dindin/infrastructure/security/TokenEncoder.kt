@@ -1,4 +1,4 @@
-package org.gotson.komga.infrastructure.security
+package br.com.dindin.infrastructure.security
 
 /**
  * Service interface for encoding tokens.

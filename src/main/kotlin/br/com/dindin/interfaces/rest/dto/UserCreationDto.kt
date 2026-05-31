@@ -1,4 +1,4 @@
-package org.gotson.komga.interfaces.api.rest.dto
+package br.com.dindin.interfaces.rest.dto
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Email

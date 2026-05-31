@@ -15,7 +15,6 @@
 	<properties>
 		<java.version>21</java.version>
 		<kotlin.version>2.2.21</kotlin.version>
-        <jooq.version>3.21.4</jooq.version>
         <flyway.version>11.7.2</flyway.version>
         <lucene.version>9.10.0</lucene.version>
         <sqlite-jdbc.version>3.45.3.0</sqlite-jdbc.version>
@@ -118,6 +117,10 @@
             <artifactId>spring-session-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.github.gotson</groupId>
             <artifactId>spring-session-caffeine</artifactId>
             <version>2.1.0</version>
@@ -125,6 +128,16 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Cache -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>jcache</artifactId>
         </dependency>
 
         <!-- Configuration processor (kapt) -->
@@ -414,6 +427,9 @@
                 </executions>
                 <configuration>
                     <jvmTarget>21</jvmTarget> <!-- Updated to Java 21 -->
+                    <compilerPlugins>
+                        <plugin>spring</plugin>
+                    </compilerPlugins>
                     <args>
                         <arg>-Xjsr305=strict</arg>
                         <arg>-Xemit-jvm-type-annotations</arg>

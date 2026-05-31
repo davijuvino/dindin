@@ -1,4 +1,4 @@
-package br.com.dindin.domain
+package br.com.dindin.domain.model
 
 enum class UserRoles {
   ADMIN,

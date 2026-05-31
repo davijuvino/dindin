@@ -1,4 +1,4 @@
-package br.com.dindin.domain
+package br.com.dindin.domain.model
 
 import br.com.dindin.language.lowerNotBlank
 

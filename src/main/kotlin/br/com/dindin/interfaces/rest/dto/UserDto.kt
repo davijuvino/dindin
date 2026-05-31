@@ -1,9 +1,10 @@
-package org.gotson.komga.interfaces.api.rest.dto
+package br.com.dindin.interfaces.rest.dto
 
-import org.gotson.komga.domain.model.AgeRestriction
-import org.gotson.komga.domain.model.AllowExclude
-import org.gotson.komga.domain.model.KomgaUser
-import org.gotson.komga.infrastructure.security.KomgaPrincipal
+import br.com.dindin.domain.model.AgeRestriction
+import br.com.dindin.domain.model.AllowExclude
+import br.com.dindin.domain.model.KomgaUser
+import br.com.dindin.infrastructure.security.KomgaPrincipal
+
 
 data class UserDto(
   val id: String,
@@ -17,8 +18,8 @@ data class UserDto(
 )
 
 data class AgeRestrictionDto(
-  val age: Int,
-  val restriction: AllowExclude,
+    val age: Int,
+    val restriction: AllowExclude,
 )
 
 fun AgeRestriction.toDto() = AgeRestrictionDto(age, restriction)

@@ -1,4 +1,4 @@
-package br.com.dindin.domain
+package br.com.dindin.domain.model
 
 import br.com.dindin.language.lowerNotBlank
 import com.github.f4b6a3.tsid.TsidCreator
@@ -12,7 +12,7 @@ data class KomgaUser(
   @NotBlank
   val email: String,
   @NotBlank
-  val password: String,
+  val password: String?,
   val roles: Set<UserRoles> = setOf(UserRoles.FILE_DOWNLOAD, UserRoles.PAGE_STREAMING),
   val sharedLibrariesIds: Set<String> = emptySet(),
   val sharedAllLibraries: Boolean = true,
