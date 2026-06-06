@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank
 @Table(name = "series_metadata")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "cache.series_metadata")
-class SeriesMetadata : AuditableEntity {
+class SeriesMetadata : Auditable {
     constructor(
         status: Status = Status.ONGOING,
         title: String,

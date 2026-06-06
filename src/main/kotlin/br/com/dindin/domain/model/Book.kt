@@ -30,7 +30,7 @@ class Book(
 
     @Column(name = "file_size", nullable = false)
     var fileSize: Long = 0
-) : AuditableEntity() {
+) : Auditable() {
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false)

@@ -50,7 +50,7 @@ class UserController(
                         KomgaUser(
                             email = email,
                             password = password,
-                            roles = roles.map { UserRoles.valueOf(it) }.toSet()
+                            roles = UserRoles.Companion.valuesOf(roles)
                         )
                     },
                 ).toDto()
@@ -72,6 +72,7 @@ class UserController(
         val name: String
     )
 
+    /*
     data class UserCreationDto(
         @get:Email val email: String,
         @get:NotBlank val password: String,
@@ -82,7 +83,7 @@ class UserController(
                 .password(password)
                 .roles(*roles.toTypedArray())
                 .build()
-    }
+    }*/
 
     data class PasswordUpdateDto(
         @get:NotBlank val password: String

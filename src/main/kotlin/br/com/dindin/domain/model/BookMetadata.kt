@@ -12,7 +12,7 @@ import java.time.LocalDate
 @Table(name = "book_metadata")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "cache.book_metadata")
-class BookMetadata : AuditableEntity {
+class BookMetadata : Auditable {
     constructor(
         title: String,
         summary: String = "",
@@ -113,11 +113,4 @@ class BookMetadata : AuditableEntity {
 
     @Column(name = "authors_lock", nullable = false)
     var authorsLock: Boolean = false
-
-    enum class ReadingDirection {
-        LEFT_TO_RIGHT,
-        RIGHT_TO_LEFT,
-        VERTICAL,
-        WEBTOON
-    }
 }

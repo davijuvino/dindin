@@ -26,7 +26,7 @@ class Media(
 
     @Column(name = "comment")
     var comment: String? = null
-) : AuditableEntity() {
+) : Auditable() {
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)

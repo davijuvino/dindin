@@ -20,7 +20,7 @@ class Library(
     @NotBlank
     @Column(name = "root", nullable = false)
     val root: URL
-) : AuditableEntity() {
+) : Auditable() {
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)

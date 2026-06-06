@@ -7,13 +7,13 @@ import jakarta.validation.constraints.NotNull
 
 @Entity
 @Table(name = "users")
-class KomgaUser(
-    @field:Email
-    @field:NotBlank
+data class KomgaUser(
+    @Email(regexp = ".+@.+\\..+")
+    @NotBlank
     @Column(name = "email", nullable = false, unique = true)
-    var email: String,
+    val email: String,
 
-    @field:NotBlank
+    @NotBlank
     @Column(name = "password", nullable = false)
     var password: String?,
 
@@ -21,13 +21,13 @@ class KomgaUser(
     @CollectionTable(name = "user_role", joinColumns = [JoinColumn(name = "user_id")])
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    var roles: Set<UserRoles> = mutableSetOf()
-) : AuditableEntity() {
+    val roles: Set<UserRoles> = mutableSetOf()
+) : Auditable() {
 
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false)
-    var id: Long = 0
+    val id: Long = 0
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -35,7 +35,7 @@ class KomgaUser(
         joinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")],
         inverseJoinColumns = [JoinColumn(name = "library_id", referencedColumnName = "id")]
     )
-    var sharedLibraries: MutableSet<Library> = mutableSetOf()
+    val sharedLibraries: MutableSet<Library> = mutableSetOf()
 
     @NotNull
     @Column(name = "shared_all_libraries", nullable = false)
@@ -58,8 +58,6 @@ class KomgaUser(
     fun canAccessLibrary(library: Library): Boolean {
         return sharedAllLibraries || sharedLibraries.any { it.id == library.id }
     }
-}
 
-enum class UserRoles {
-    ADMIN
+    override fun toString(): String = "KomgaUser(id=$id, email='$email', roles=$roles, sharedAllLibraries=$sharedAllLibraries, createdDate=$createdDate, lastModifiedDate=$lastModifiedDate)"
 }

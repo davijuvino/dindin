@@ -29,7 +29,7 @@ class Series(
 
     books: Iterable<Book>
 
-) : AuditableEntity() {
+) : Auditable() {
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)

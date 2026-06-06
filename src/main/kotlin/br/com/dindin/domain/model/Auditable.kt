@@ -8,7 +8,7 @@ import jakarta.persistence.*
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
-abstract class AuditableEntity {
+abstract class Auditable {
     @CreatedDate
     @Column(name = "created_date", updatable = false, nullable = false)
     var createdDate: LocalDateTime? = null
