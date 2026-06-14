@@ -53,9 +53,9 @@ class KomgaUserLifecycle(
         val existing = userRepository.findByIdOrNull(user.id)
         requireNotNull(existing) { "User doesn't exist, cannot update: $user" }
 
-        val toUpdate = user.copy(password = existing.password)
-        logger.info { "Update user: $toUpdate" }
-        userRepository.save(toUpdate)
+      val toUpdate = user.copy(password = existing.password)
+      logger.info { "Update user: $toUpdate" }
+      userRepository.save(toUpdate)
   }
 
   fun updatePassword(
@@ -63,9 +63,9 @@ class KomgaUserLifecycle(
         newPassword: String,
         expireSessions: Boolean,
   ) {
-        logger.info { "Changing password for user ${user.email}" }
-        val updatedUser = user.copy(password = passwordEncoder.encode(newPassword))
-        userRepository.save(updatedUser)
+      logger.info { "Changing password for user ${user.email}" }
+      val updatedUser = user.copy(password = passwordEncoder.encode(newPassword))
+      userRepository.save(updatedUser)
   }
 
     fun expireSessions(user: KomgaUser) {
@@ -109,10 +109,10 @@ class KomgaUserLifecycle(
                     ApiKey(
                         id = user.id,
                         userId = user,
-                        key = apiKeyGenerator.generate(),
+                        pkey = apiKeyGenerator.generate(),
                         comment = commentTrimmed,
                     )
-                userRepository.save(plainTextKey.copy(key = tokenEncoder.encode(plainTextKey.key)))
+                userRepository.save(plainTextKey.copy(pkey = tokenEncoder.encode(plainTextKey.pkey)))
                 return plainTextKey
             } catch (e: Exception) {
                 logger.debug { "Failed to generate unique api key, attempt #$attempt" }

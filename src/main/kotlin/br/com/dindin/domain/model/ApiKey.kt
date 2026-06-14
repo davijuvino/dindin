@@ -1,6 +1,5 @@
 package br.com.dindin.domain.model
 
-import com.github.f4b6a3.tsid.TsidCreator
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -26,7 +25,7 @@ data class ApiKey(
     @JoinColumn(name = "user_id", nullable = false)
     var userId: KomgaUser,
 
-    val key: String,
+    val pkey: String,
     val comment: String,
 
-) : Auditable()
+    ) : Auditable()

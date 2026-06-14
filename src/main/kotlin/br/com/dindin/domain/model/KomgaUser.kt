@@ -9,7 +9,6 @@ import jakarta.validation.constraints.NotNull
 @Entity
 @Table(name = "users")
 data class KomgaUser(
-
     @Email(regexp = ".+@.+\\..+")
     @NotBlank
     @Column(name = "email", nullable = false, unique = true)
@@ -64,6 +63,15 @@ data class KomgaUser(
         }
 
     val restrictions: ContentRestrictions = ContentRestrictions()
+
+    /**
+     * Default constructor for JPA.
+     */
+    constructor() : this(
+        email = "",
+        password = null,
+        roles = emptySet()
+    )
 
 
     /**
