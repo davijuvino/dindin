@@ -1,15 +1,14 @@
-package br.com.dindin.infrastructure.configuration
+package br.com.dindin.infrastructure.security
 
+import br.com.dindin.infrastructure.configuration.KomgaProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest
-import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.session.SessionRegistry
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.SecurityFilterChain
@@ -17,7 +16,6 @@ import org.springframework.security.web.header.writers.XXssProtectionHeaderWrite
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
-import javax.sql.DataSource
 
 private val logger = KotlinLogging.logger {}
 

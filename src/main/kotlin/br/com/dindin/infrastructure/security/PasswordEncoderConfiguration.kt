@@ -1,5 +1,6 @@
-package br.com.dindin.infrastructure.configuration
+package br.com.dindin.infrastructure.security
 
+import br.com.dindin.infrastructure.security.TokenEncoder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.core.token.Sha512DigestUtils
@@ -14,4 +15,3 @@ class PasswordEncoderConfiguration {
     @Bean
     fun getTokenEncoder(): TokenEncoder = TokenEncoder { rawPassword -> Sha512DigestUtils.shaHex(rawPassword) }
 }
-

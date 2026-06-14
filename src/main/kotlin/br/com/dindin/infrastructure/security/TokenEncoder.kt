@@ -1,4 +1,4 @@
-package br.com.dindin.infrastructure.configuration
+package br.com.dindin.infrastructure.security
 
 /**
  * Service interface for encoding tokens.

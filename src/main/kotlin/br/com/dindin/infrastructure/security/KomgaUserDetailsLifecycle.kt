@@ -1,4 +1,4 @@
-package br.com.dindin.infrastructure.configuration
+package br.com.dindin.infrastructure.security
 
 import br.com.dindin.domain.model.KomgaUser
 import br.com.dindin.domain.model.UserRoles
@@ -25,7 +25,7 @@ class KomgaUserDetailsLifecycle(
 
   override fun loadUserByUsername(username: String): UserDetails =
     userRepository.findByEmailIgnoreCase(username)?.let {
-      KomgaPrincipal(it)
+        KomgaPrincipal(it)
     } ?: throw UsernameNotFoundException(username)
 
   @Transactional
