@@ -16,5 +16,8 @@ interface LibraryRepository : JpaRepository<Library, Long> {
   //@QueryHints(QueryHint(name = CACHEABLE, value = "true"))
   override fun findAllById(ids: Iterable<Long>): List<Library>
 
+
+  fun findAllByIds(libraryIds: Collection<String>): Collection<Library>
+
   fun existsByName(name: String): Boolean
 }

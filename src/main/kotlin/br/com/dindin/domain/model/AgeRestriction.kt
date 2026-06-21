@@ -17,3 +17,8 @@ enum class AgeRestriction(val minAge: Int?) {
             }
     }
 }
+
+enum class AllowExclude {
+    ALLOW_ONLY,
+    EXCLUDE,
+}

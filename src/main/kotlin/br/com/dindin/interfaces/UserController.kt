@@ -1,6 +1,7 @@
 package br.com.dindin.interfaces
 
 
+import br.com.dindin.domain.model.ContentRestrictions
 import br.com.dindin.domain.model.KomgaUser
 import br.com.dindin.domain.model.UserEmailAlreadyExistsException
 import br.com.dindin.domain.model.UserRoles
@@ -13,6 +14,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import org.springframework.core.env.Environment
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -20,6 +22,7 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -27,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
-
 
 private val logger = KotlinLogging.logger {}
 
@@ -43,7 +45,6 @@ class UserController(
     private val demo = env.activeProfiles.contains("demo")
 
     @GetMapping("me")
-    //@Operation(summary = "Retrieve current user", tags = [TagNames.CURRENT_USER])
     fun getCurrentUser(
         @AuthenticationPrincipal principal: KomgaPrincipal,
         @RequestParam(name = "remember-me", required = false) rememberMe: Boolean?,
@@ -51,7 +52,6 @@ class UserController(
 
     @PatchMapping("me/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    //@Operation(summary = "Update current user's password", tags = [TagNames.CURRENT_USER])
     fun updatePasswordForCurrentUser(
         @AuthenticationPrincipal principal: KomgaPrincipal,
         @Valid @RequestBody
@@ -63,11 +63,7 @@ class UserController(
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     }
 
-
-
     @GetMapping
-    //@PreAuthorize("hasRole('ADMIN')")
-    //@Operation(summary = "List users", tags = [TagNames.USERS])
     fun getUsers(): List<UserDto> = userRepository.findAll().map { it.toDto() }
 
     @PostMapping
@@ -91,6 +87,45 @@ class UserController(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "A user with this email already exists")
         }
 
+    @PatchMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun updateUserById(
+        @PathVariable id: Long,
+        @Valid @RequestBody
+        patch: UserUpdateDto,
+        @AuthenticationPrincipal principal: KomgaPrincipal,
+    ) {
+        userRepository.findByIdOrNull(id)?.let { existing ->
+            val updatedUser =
+                with(patch) {
+                    // calcula novos valores de restrictions de forma segura
+                    val newAgeRestriction = if (isSet("ageRestriction")) {
+                        if (ageRestriction == null || ageRestriction?.restriction == AllowExcludeDto.NONE)
+                            null
+                        else
+                        // espera-se que o DTO tenha um método toDomain() que retorne AgeRestriction
+                            ageRestriction!!.toDomain()
+                    } else {
+                        existing.restrictions.ageRestriction
+                    }
+
+                    val newLabelsAllow = if (isSet("labelsAllow")) labelsAllow ?: emptySet() else existing.restrictions.labelsAllow
+                    val newLabelsExclude = if (isSet("labelsExclude")) labelsExclude ?: emptySet() else existing.restrictions.labelsExclude
+
+                    existing.copy(
+                        roles = if (isSet("roles")) UserRoles.valuesOf(roles!!) else existing.roles,
+                        sharedAllLibraries = if (isSet("sharedLibraries")) sharedLibraries!!.all else existing.sharedAllLibraries,
+                        restrictions =
+                            ContentRestrictions(
+                                ageRestriction = newAgeRestriction,
+                                paramLabelsAllow = newLabelsAllow,
+                                paramLabelsExclude = newLabelsExclude,
+                            ),
+                    )
+                }
+            userLifecycle.updateUser(updatedUser)
+        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    }
 
     data class UserWithSharedLibrariesDto(
         val id: Long,
@@ -104,19 +139,6 @@ class UserController(
         val id: Long,
         val name: String
     )
-
-    /*
-    data class UserCreationDto(
-        @get:Email val email: String,
-        @get:NotBlank val password: String,
-        val roles: List<String> = emptyList()
-    ) {
-        fun toUserDetails(): UserDetails =
-            User.withUsername(email)
-                .password(password)
-                .roles(*roles.toTypedArray())
-                .build()
-    }*/
 
     data class PasswordUpdateDto(
         @get:NotBlank val password: String

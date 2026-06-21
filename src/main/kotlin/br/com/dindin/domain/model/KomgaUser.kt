@@ -22,7 +22,16 @@ data class KomgaUser(
     @CollectionTable(name = "user_role", joinColumns = [JoinColumn(name = "user_id")])
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    val roles: Set<UserRoles> = mutableSetOf()
+    val roles: Set<UserRoles> = mutableSetOf(),
+
+    val sharedLibrariesIds: Set<String> = emptySet(),
+
+    @NotNull
+    @Column(name = "shared_all_libraries", nullable = false)
+    var sharedAllLibraries: Boolean = false,
+
+    val restrictions: ContentRestrictions = ContentRestrictions()
+
 ) : Auditable() {
 
     @Id
@@ -38,8 +47,6 @@ data class KomgaUser(
     )
     val sharedLibraries: MutableSet<Library> = mutableSetOf()
 
-    val sharedLibrariesIds: Set<String> = emptySet()
-
     @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], optional = true)
     @JoinColumn(name = "api_key_id", referencedColumnName = "id")
     var apiKey: ApiKey? = null
@@ -54,15 +61,6 @@ data class KomgaUser(
     )
     var userId: KomgaUser? = null
 
-    @NotNull
-    @Column(name = "shared_all_libraries", nullable = false)
-    var sharedAllLibraries: Boolean = false
-        get() = if (roles.contains(UserRoles.ADMIN)) true else field
-        set(value) {
-            field = if (roles.contains(UserRoles.ADMIN)) true else value
-        }
-
-    val restrictions: ContentRestrictions = ContentRestrictions()
 
     /**
      * Default constructor for JPA.
