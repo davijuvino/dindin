@@ -1,6 +1,7 @@
 package br.com.dindin.interfaces
 
 
+import br.com.dindin.domain.model.AgeRestriction
 import br.com.dindin.domain.model.ContentRestrictions
 import br.com.dindin.domain.model.KomgaUser
 import br.com.dindin.domain.model.UserEmailAlreadyExistsException
@@ -103,8 +104,7 @@ class UserController(
                         if (ageRestriction == null || ageRestriction?.restriction == AllowExcludeDto.NONE)
                             null
                         else
-                        // espera-se que o DTO tenha um método toDomain() que retorne AgeRestriction
-                            ageRestriction!!.toDomain()
+                            AgeRestriction.fromMinAge(ageRestriction?.age)
                     } else {
                         existing.restrictions.ageRestriction
                     }

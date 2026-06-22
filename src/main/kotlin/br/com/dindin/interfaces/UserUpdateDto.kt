@@ -1,7 +1,5 @@
 package br.com.dindin.interfaces
 
-import br.com.dindin.domain.model.AgeRestriction
-import br.com.dindin.domain.model.AllowExclude
 import jakarta.validation.Valid
 import jakarta.validation.constraints.PositiveOrZero
 import kotlin.properties.Delegates
@@ -49,20 +47,3 @@ data class SharedLibrariesUpdateDto(
   val libraryIds: Set<String>,
 )
 
-enum class AllowExcludeDto {
-  ALLOW_ONLY,
-  EXCLUDE,
-  NONE,
-  ;
-
-  fun toDomain() =
-    when (this) {
-      ALLOW_ONLY -> AllowExclude.ALLOW_ONLY
-      EXCLUDE -> AllowExclude.EXCLUDE
-      NONE -> throw IllegalArgumentException()
-    }
-}
-
-fun AgeRestrictionUpdateDto.toDomain(): AgeRestriction {
-    TODO("Provide the return value")
-}

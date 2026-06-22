@@ -10,14 +10,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface LibraryRepository : JpaRepository<Library, Long> {
-  //@QueryHints(QueryHint(name = CACHEABLE, value = "true"))
-  override fun findAll(sort: Sort): List<Library>
 
-  //@QueryHints(QueryHint(name = CACHEABLE, value = "true"))
-  override fun findAllById(ids: Iterable<Long>): List<Library>
-
-
-  fun findAllByIds(libraryIds: Collection<String>): Collection<Library>
-
-  fun existsByName(name: String): Boolean
 }
