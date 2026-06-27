@@ -258,10 +258,6 @@ class UserController(
         val name: String
     )
 
-    data class PasswordUpdateDto(
-        @get:NotBlank val password: String
-    )
-
     data class SharedLibrariesUpdateDto(
         val all: Boolean,
         val libraryIds: Set<Long>

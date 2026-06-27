@@ -1,6 +1,7 @@
 package br.com.dindin.infrastructure.security
 
 import br.com.dindin.infrastructure.configuration.KomgaProperties
+import br.com.dindin.infrastructure.configuration.KomgaSettingsProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest
 import org.springframework.context.annotation.Bean
@@ -12,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.session.SessionRegistry
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices
 import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
@@ -23,6 +25,7 @@ private val logger = KotlinLogging.logger {}
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 class SecurityConfiguration(
+    private val komgaSettingsProvider: KomgaSettingsProvider,
     private val komgaProperties: KomgaProperties,
     private val komgaUserDetailsLifecycle: UserDetailsService,
     private val sessionRegistry: SessionRegistry,
@@ -89,6 +92,12 @@ class SecurityConfiguration(
                     .useSecureCookie(true)
 
             }
+        }
+
+        http.rememberMe {
+            it.rememberMeServices(
+                TokenBasedRememberMeServices()
+            )
         }
 
         return http.build()
