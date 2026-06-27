@@ -17,5 +17,14 @@ interface KomgaUserRepository : CrudRepository<KomgaUser, Long> {
     fun existsByEmailIgnoreCase(email: String): Boolean
     fun findByEmailIgnoreCase(email: String): KomgaUser?
     fun existsApiKeyByCommentAndUserId(comment: String, id: Long): Boolean
+    fun findApiKeyByUserId(userId: Long): Collection<ApiKey>
+    fun existsApiKeyByIdAndUserId(
+        apiKeyId: Long,
+        userId: Long,
+    ): Boolean
+    fun deleteApiKeyByIdAndUserId(
+        apiKeyId: Long,
+        userId: Long,
+    )
 
 }

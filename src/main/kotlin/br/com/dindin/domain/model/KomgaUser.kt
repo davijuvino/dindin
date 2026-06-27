@@ -61,7 +61,6 @@ data class KomgaUser(
     )
     var userId: KomgaUser? = null
 
-
     /**
      * Default constructor for JPA.
      */
