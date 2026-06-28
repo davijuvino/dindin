@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.session.SessionRegistry
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices
 import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter
 import org.springframework.web.cors.CorsConfiguration
@@ -27,7 +28,8 @@ private val logger = KotlinLogging.logger {}
 class SecurityConfiguration(
     private val komgaSettingsProvider: KomgaSettingsProvider,
     private val komgaProperties: KomgaProperties,
-    private val komgaUserDetailsLifecycle: UserDetailsService,
+    private val komgaUserDetailsService: UserDetailsService,
+    private val userAgentWebAuthenticationDetailsSource: WebAuthenticationDetailsSource,
     private val sessionRegistry: SessionRegistry,
 ) {
 
@@ -87,7 +89,7 @@ class SecurityConfiguration(
                     .key(komgaProperties.rememberMe.key)
                     .tokenValiditySeconds(komgaProperties.rememberMe.validity)
                     .alwaysRemember(true)
-                    .userDetailsService(komgaUserDetailsLifecycle)
+                    .userDetailsService(komgaUserDetailsService)
                     .rememberMeParameter("remember-me")
                     .useSecureCookie(true)
 
@@ -96,7 +98,11 @@ class SecurityConfiguration(
 
         http.rememberMe {
             it.rememberMeServices(
-                TokenBasedRememberMeServices()
+                TokenBasedRememberMeServices(komgaSettingsProvider.getRememberMeKey(), komgaUserDetailsService).apply {
+                    setTokenValiditySeconds(komgaSettingsProvider.rememberMeDuration.inWholeSeconds.toInt())
+                    setAuthenticationDetailsSource(userAgentWebAuthenticationDetailsSource)
+                    setCookieName("komga-remember-me")
+                }
             )
         }
 

@@ -1,106 +1,118 @@
 package br.com.dindin.infrastructure.configuration
 
-import org.apache.commons.lang3.RandomStringUtils
+import br.com.dindin.domain.model.ServerSettings
 import br.com.dindin.domain.model.ThumbnailSize
-import org.gotson.komga.infrastructure.jooq.main.ServerSettingsDao
+import br.com.dindin.domain.persistence.ServerSettingsRepository
+import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import kotlin.time.Duration
-
 import kotlin.time.Duration.Companion.days
 
 @Service
 class KomgaSettingsProvider(
-    private val serverSettingsDao: ServerSettingsDao,
-    private val eventPublisher: ApplicationEventPublisher,
+    private val serverSettingsRepository: ServerSettingsRepository,
+    private val eventPublisher: ApplicationEventPublisher
 ) {
 
-
-    var rememberMeKey: String =
-        serverSettingsDao.getSettingByKey(Settings.REMEMBER_ME_KEY.name, String::class.java)
-            ?: getRandomRememberMeKey().also { rememberMeKey = it }
-        set(value) {
-            serverSettingsDao.saveSetting(Settings.REMEMBER_ME_KEY.name, value)
-            field = value
-        }
-
-    fun renewRememberMeKey() {
-        rememberMeKey = getRandomRememberMeKey()
+    fun getRememberMeKey(): String {
+        return serverSettingsRepository.findByPKey(Settings.REMEMBER_ME_KEY.name)?.pValue
+            ?: generateAndSaveRememberMeKey()
     }
 
-    private fun getRandomRememberMeKey() = RandomStringUtils.secure().nextAlphanumeric(32)
+    fun renewRememberMeKey(): String {
+        return generateAndSaveRememberMeKey()
+    }
 
-    var rememberMeDuration: Duration =
-        (serverSettingsDao.getSettingByKey(Settings.REMEMBER_ME_DURATION.name, Int::class.java) ?: 365).days
-        set(value) {
-            serverSettingsDao.saveSetting(Settings.REMEMBER_ME_DURATION.name, value.inWholeDays.toInt())
-            field = value
-        }
+    private fun generateAndSaveRememberMeKey(): String {
+        val newKey = RandomStringUtils.secure().nextAlphanumeric(32)
+        serverSettingsRepository.save(ServerSettings(Settings.REMEMBER_ME_KEY.name, newKey))
+        return newKey
+    }
 
-    var thumbnailSize: ThumbnailSize =
-        serverSettingsDao.getSettingByKey(Settings.THUMBNAIL_SIZE.name, String::class.java)?.let {
+    fun getThumbnailSize(): ThumbnailSize {
+        return serverSettingsRepository.findByPKey(Settings.THUMBNAIL_SIZE.name)?.pValue?.let {
             ThumbnailSize.valueOf(it)
         } ?: ThumbnailSize.DEFAULT
+    }
+
+    fun setThumbnailSize(value: ThumbnailSize) {
+        serverSettingsRepository.save(ServerSettings(Settings.THUMBNAIL_SIZE.name, value.name))
+    }
+
+    fun getTaskPoolSize(): Int {
+        return serverSettingsRepository.findByPKey(Settings.TASK_POOL_SIZE.name)?.pValue?.toIntOrNull() ?: 1
+    }
+
+    fun setTaskPoolSize(value: Int) {
+        serverSettingsRepository.save(ServerSettings(Settings.TASK_POOL_SIZE.name, value.toString()))
+        eventPublisher.publishEvent("TaskPoolSizeChanged")
+    }
+
+    fun getServerPort(): Int? {
+        return serverSettingsRepository.findByPKey(Settings.SERVER_PORT.name)?.pValue?.toIntOrNull()
+    }
+
+    fun setServerPort(value: Int?) {
+        if (value != null) {
+            serverSettingsRepository.save(ServerSettings(Settings.SERVER_PORT.name, value.toString()))
+        } else {
+            serverSettingsRepository.delete(ServerSettings(Settings.SERVER_PORT.name, value.toString()))
+        }
+    }
+
+    fun getServerContextPath(): String? {
+        return serverSettingsRepository.findByPKey(Settings.SERVER_CONTEXT_PATH.name)?.pValue
+    }
+
+    fun setServerContextPath(value: String?) {
+        if (value != null) {
+            serverSettingsRepository.save(ServerSettings(Settings.SERVER_CONTEXT_PATH.name, value))
+        } else {
+            serverSettingsRepository.delete(ServerSettings(Settings.SERVER_CONTEXT_PATH.name, value.toString()))
+        }
+    }
+
+    fun isKoboProxyEnabled(): Boolean {
+        return serverSettingsRepository.findByPKey(Settings.KOBO_PROXY.name)?.pValue?.toBoolean() == true
+    }
+
+    fun setKoboProxy(value: Boolean) {
+        serverSettingsRepository.save(ServerSettings(Settings.KOBO_PROXY.name, value.toString()))
+    }
+
+    fun getKoboPort(): Int? {
+        return serverSettingsRepository.findByPKey(Settings.KOBO_PORT.name)?.pValue?.toIntOrNull()
+    }
+
+    fun setKoboPort(value: Int?) {
+        if (value != null) {
+            serverSettingsRepository.save(ServerSettings(Settings.KOBO_PORT.name, value.toString()))
+        } else {
+            serverSettingsRepository.delete(ServerSettings(Settings.KOBO_PORT.name, value.toString()))
+        }
+    }
+
+    var rememberMeDuration: Duration =
+        serverSettingsRepository.findByPKey(Settings.REMEMBER_ME_DURATION.name)?.pValue?.toIntOrNull()?.days
+            ?: 365.days
         set(value) {
-            serverSettingsDao.saveSetting(Settings.THUMBNAIL_SIZE.name, value.name)
+            serverSettingsRepository.save(ServerSettings(Settings.REMEMBER_ME_DURATION.name, value.inWholeDays.toString()))
             field = value
         }
 
-    var taskPoolSize: Int =
-        serverSettingsDao.getSettingByKey(Settings.TASK_POOL_SIZE.name, Int::class.java) ?: 1
-        set(value) {
-            serverSettingsDao.saveSetting(Settings.TASK_POOL_SIZE.name, value)
-            field = value
-            eventPublisher.publishEvent(SettingChangedEvent.TaskPoolSize)
-        }
+    fun getKepubifyPath(): String? {
+        return serverSettingsRepository.findByPKey(Settings.KEPUBIFY_PATH.name)?.pValue?.ifBlank { null }
+    }
 
-    var serverPort: Int? =
-        serverSettingsDao.getSettingByKey(Settings.SERVER_PORT.name, Int::class.java)
-        set(value) {
-            if (value != null)
-                serverSettingsDao.saveSetting(Settings.SERVER_PORT.name, value)
-            else
-                serverSettingsDao.deleteSetting(Settings.SERVER_PORT.name)
-            field = value
+    fun setKepubifyPath(value: String?) {
+        if (value != null) {
+            serverSettingsRepository.save(ServerSettings(Settings.KEPUBIFY_PATH.name, value))
+        } else {
+            serverSettingsRepository.delete(ServerSettings(Settings.KEPUBIFY_PATH.name, value.toString()))
         }
-
-    var serverContextPath: String? =
-        serverSettingsDao.getSettingByKey(Settings.SERVER_CONTEXT_PATH.name, String::class.java)
-        set(value) {
-            if (value != null)
-                serverSettingsDao.saveSetting(Settings.SERVER_CONTEXT_PATH.name, value)
-            else
-                serverSettingsDao.deleteSetting(Settings.SERVER_CONTEXT_PATH.name)
-            field = value
-        }
-
-    var koboProxy: Boolean =
-        serverSettingsDao.getSettingByKey(Settings.KOBO_PROXY.name, Boolean::class.java) ?: false
-        set(value) {
-            serverSettingsDao.saveSetting(Settings.KOBO_PROXY.name, value)
-            field = value
-        }
-
-    var koboPort: Int? =
-        serverSettingsDao.getSettingByKey(Settings.KOBO_PORT.name, Int::class.java)
-        set(value) {
-            if (value != null)
-                serverSettingsDao.saveSetting(Settings.KOBO_PORT.name, value)
-            else
-                serverSettingsDao.deleteSetting(Settings.KOBO_PORT.name)
-            field = value
-        }
-
-    var kepubifyPath: String? =
-        serverSettingsDao.getSettingByKey(Settings.KEPUBIFY_PATH.name, String::class.java)?.ifBlank { null }
-        set(value) {
-            if (value != null)
-                serverSettingsDao.saveSetting(Settings.KEPUBIFY_PATH.name, value)
-            else
-                serverSettingsDao.deleteSetting(Settings.KEPUBIFY_PATH.name)
-            field = value
-            eventPublisher.publishEvent(SettingChangedEvent.KepubifyPath)
-        }
+        eventPublisher.publishEvent("KepubifyPathChanged")
+    }
 }
 
 private enum class Settings {
