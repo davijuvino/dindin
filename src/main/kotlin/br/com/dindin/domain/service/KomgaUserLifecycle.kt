@@ -38,8 +38,8 @@ class KomgaUserLifecycle(
   @Throws(UserEmailAlreadyExistsException::class)
   fun createUser(komgaUser: KomgaUser): KomgaUser {
     if (userRepository.existsByEmailIgnoreCase(komgaUser.email)) throw UserEmailAlreadyExistsException("A user with the same email already exists: ${komgaUser.email}")
-        komgaUser.copy(password = passwordEncoder.encode(komgaUser.password))
-        userRepository.save(komgaUser)
+
+    userRepository.save(komgaUser.copy(password = passwordEncoder.encode(komgaUser.password)))
 
     val createdUser = userRepository.findByIdOrNull(komgaUser.id)!!
     logger.info { "User created: $createdUser" }
