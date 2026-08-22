@@ -1,0 +1,75 @@
+application.version: ${version}
+
+logging:
+  file:
+    max-history: 10
+    name: komga.log
+  level:
+    org.apache.activemq.audit.message: WARN
+
+komga:
+  libraries-scan-cron: "0 */15 * * * ?"
+  libraries-scan-directory-exclusions:
+    - "#recycle"
+    - "@eaDir"
+
+spring:
+  #  cache:
+  #    caffeine-spec: maximumSize=500,expireAfterWrite=300s
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:h2:~/.komga/database.h2
+  h2:
+    console:
+      enabled: true
+  resources:
+    add-mappings: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      javax:
+        persistence.sharedCache.mode: ENABLE_SELECTIVE
+        cache.provider: com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider
+      hibernate:
+        generate_statistics: true
+        session.events.log: false
+        cache:
+          use_second_level_cache: true
+          use_query_cache: true
+          region.factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+  flyway:
+    enabled: true
+  thymeleaf:
+    prefix: classpath:/public/
+  mvc:
+    throw-exception-if-no-handler-found: true
+  artemis:
+    embedded:
+      persistent: true
+      data-directory: ~/.komga/artemis
+
+server:
+  servlet.session.timeout: 7d
+  forward-headers-strategy: framework
+
+management:
+  endpoints.web.exposure.include: "*"
+  endpoint:
+    health:
+      roles: ADMIN
+      show-details: when_authorized
+  metrics:
+    export:
+      influx:
+        enabled: false
+springdoc:
+  group-configs:
+    - group: REST API
+      paths-to-match: /api/**
+    - group: OPDS
+      paths-to-match: /opds/**
+  swagger-ui:
+    groups-order: desc
+    operations-sorter: alpha

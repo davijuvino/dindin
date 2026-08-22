@@ -1,0 +1,3 @@
+App for financial control
+_____________________________
+Version: ${application.version}
