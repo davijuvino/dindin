@@ -1,5 +1,6 @@
 package br.com.dindin.infrastructure.security
 
+import br.com.dindin.domain.model.ContentRestrictions
 import br.com.dindin.domain.model.KomgaUser
 import br.com.dindin.domain.model.UserRoles
 import br.com.dindin.domain.persistence.KomgaUserRepository
@@ -49,9 +50,14 @@ class KomgaUserDetailsLifecycle(
     if (userRepository.existsByEmailIgnoreCase(user.username)) throw UserEmailAlreadyExistsException("A user with the same email already exists: ${user.username}")
 
     val komgaUser = KomgaUser(
-        email = user.username,
-        password = passwordEncoder.encode(user.password),
-        roles = user.authorities.toUserRoles()
+      email = user.username,
+      password = null,
+      roles = emptySet(),
+      sharedLibrariesIds = emptySet(),
+      sharedAllLibraries = false,
+      restrictions = ContentRestrictions(),
+      userId = 0L,
+      comment = null
     )
 
     userRepository.save(komgaUser)

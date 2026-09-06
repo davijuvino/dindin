@@ -9,6 +9,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import java.time.LocalDateTime
 
@@ -32,6 +33,13 @@ data class AuthenticationActivity(
     @JoinColumn(name = "apikey_id", nullable = false)
     var apiKeyId: ApiKey,
 
+    @NotBlank
+    @Column(name = "email", nullable = false)
+    val email: String,
+
+    @Column(name = "apiKeyComment", nullable = false)
+    val apiKeyComment: String,
+
     val ip: String? = null,
     val userAgent: String? = null,
     val success: Boolean = false,
@@ -49,6 +57,8 @@ data class AuthenticationActivity(
         id = 0,
         userId = KomgaUser(),
         apiKeyId = ApiKey(userId = KomgaUser(), pkey = "", comment = ""),
+        email = "",
+        apiKeyComment = "",
         ip = null,
         userAgent = null,
         success = false,

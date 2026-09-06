@@ -1,5 +1,6 @@
 package br.com.dindin.interfaces
 
+import br.com.dindin.domain.model.ContentRestrictions
 import br.com.dindin.domain.model.KomgaUser
 import br.com.dindin.domain.model.UserRoles
 import br.com.dindin.domain.service.KomgaUserLifecycle
@@ -44,14 +45,19 @@ class ClaimController(
     if (userDetailsLifecycle.countUsers() > 0)
       throw ResponseStatusException(HttpStatus.BAD_REQUEST, "This server has already been claimed")
 
-    return userDetailsLifecycle
-      .createUser(
-          KomgaUser(
-              email = email,
-              password = password,
-              roles = UserRoles.entries.toSet(),
-          ),
-      ).toDto()
+      return userDetailsLifecycle
+          .createUser(
+              KomgaUser(
+                  email = email,
+                  password = password,
+                  roles = UserRoles.entries.toSet(),
+                  sharedLibrariesIds = emptySet(),
+                  sharedAllLibraries = false,
+                  restrictions = ContentRestrictions(),
+                  userId = 0L,
+                  comment = null
+              ),
+          ).toDto()
   }
 
   data class ClaimStatus(

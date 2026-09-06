@@ -21,7 +21,7 @@ data class KomgaUser(
 
     @NotBlank
     @Column(name = "password", nullable = false)
-    var password: String,
+    var password: String?,
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role", joinColumns = [JoinColumn(name = "user_id")])
@@ -40,6 +40,9 @@ data class KomgaUser(
 
     @Embedded
     val restrictions: ContentRestrictions = ContentRestrictions(),
+
+    @Column(name = "userId", nullable = true)
+    val userId: Long,
 
     @Column(name = "comment", nullable = true)
     var comment: String? = null
@@ -69,7 +72,8 @@ data class KomgaUser(
         sharedLibrariesIds = emptySet(),
         sharedAllLibraries = false,
         restrictions = ContentRestrictions(),
-        comment = null
+        comment = null,
+        userId = 0
     )
 
 

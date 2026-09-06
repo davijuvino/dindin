@@ -9,9 +9,9 @@ import java.time.LocalDateTime
 
 data class AuthenticationActivityDto(
   val userId: KomgaUser,
-  val email: String?,
+  val email: String,
   val apiKeyId: ApiKey,
-  val apiKeyComment: String? = null,
+  val apiKeyComment: String,
   val ip: String?,
   val userAgent: String?,
   val success: Boolean,

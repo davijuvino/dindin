@@ -91,7 +91,12 @@ class UserController(
                         KomgaUser(
                             email = email,
                             password = password,
-                            roles = UserRoles.Companion.valuesOf(roles)
+                            roles = UserRoles.Companion.valuesOf(roles),
+                            sharedLibrariesIds = emptySet(),
+                            sharedAllLibraries = false,
+                            restrictions = ContentRestrictions(),
+                            userId = 0L,
+                            comment = null
                         )
                     },
                 ).toDto()
