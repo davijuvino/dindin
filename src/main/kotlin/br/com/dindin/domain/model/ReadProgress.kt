@@ -1,45 +1,51 @@
 package br.com.dindin.domain.model
 
+import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
-import kotlin.jvm.Transient
 
 @Entity
 @Table(name = "read_progress")
-@EntityListeners(AuditingEntityListener::class)
-data class ReadProgress(
+open class ReadProgress(
 
     @Id
-    @GeneratedValue
-    @Column(name = "id", nullable = false, unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     var id: Long = 0,
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "book_id", nullable = false)
-    var bookId: Book,
+    @JoinColumn(name = "user_id", nullable = false)
+    var userId: KomgaUser? = null,
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    var userId: KomgaUser,
+    @Column(name = "book_id", nullable = false)
+    var bookId: String = "",
 
-    @Column(nullable = false)
-    var page: Int,
-
+    @NotNull
     @Column(nullable = false)
     var completed: Boolean = false,
 
-    @Column(nullable = false)
+    @CreatedDate
+    @Column(name = "read_date", nullable = false, updatable = false)
     var readDate: LocalDateTime = LocalDateTime.now(),
 
     var deviceId: String = "",
 
     var deviceName: String = "",
 
-    @Transient
-    var locator: R2Locator? = null,
+) : Auditable() {
 
-    ) : Auditable()
+    constructor() : this(id = 0, userId = null, bookId = "", completed = false, readDate = LocalDateTime.now(), deviceId = "", deviceName = "")
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ReadProgress) return false
+        if (id == 0L || other.id == 0L) return this === other
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = if (id == 0L) System.identityHashCode(this) else id.hashCode()
+}

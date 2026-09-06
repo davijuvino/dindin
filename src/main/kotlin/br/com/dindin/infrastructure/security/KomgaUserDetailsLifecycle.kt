@@ -1,5 +1,6 @@
 package br.com.dindin.infrastructure.security
 
+import br.com.dindin.domain.model.ContentRestrictions
 import br.com.dindin.domain.model.KomgaUser
 import br.com.dindin.domain.model.UserRoles
 import br.com.dindin.domain.persistence.KomgaUserRepository
@@ -51,9 +52,9 @@ class KomgaUserDetailsLifecycle(
     val komgaUser = KomgaUser(
         email = user.username,
         password = passwordEncoder.encode(user.password),
-        roles = user.authorities.toUserRoles()
+        roles = user.authorities.toUserRoles(),
+        restrictions = ContentRestrictions()
     )
-
     userRepository.save(komgaUser)
     logger.info { "Created user: ${komgaUser.email}, roles: ${komgaUser.roles}" }
     return KomgaPrincipal(komgaUser)

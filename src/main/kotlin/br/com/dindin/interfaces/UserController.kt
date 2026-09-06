@@ -91,7 +91,7 @@ class UserController(
                         KomgaUser(
                             email = email,
                             password = password,
-                            roles = UserRoles.Companion.valuesOf(roles)
+                            roles = UserRoles.valuesOf(roles)
                         )
                     },
                 ).toDto()

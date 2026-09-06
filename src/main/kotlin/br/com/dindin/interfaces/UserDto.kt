@@ -9,11 +9,13 @@ data class UserDto(
     val roles: Set<String>,
 )
 
-fun KomgaUser.toDto() =
-    UserDto(
+fun KomgaUser.toDto(): UserDto {
+    val rolesSet: Set<String> = runCatching { roles.map { it.name }.toSet() }.getOrDefault(emptySet())
+    return UserDto(
         id = id,
         email = email,
-        roles = roles.map { it.name }.toSet() + "USER"
+        roles = rolesSet + "USER"
     )
+}
 
 fun KomgaPrincipal.toDto() = user.toDto()

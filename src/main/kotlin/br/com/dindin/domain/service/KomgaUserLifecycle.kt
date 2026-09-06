@@ -8,6 +8,7 @@ import br.com.dindin.domain.persistence.AuthenticationActivityRepository
 import br.com.dindin.domain.persistence.KomgaUserRepository
 import br.com.dindin.domain.persistence.ReadProgressRepository
 import br.com.dindin.domain.persistence.SyncPointRepository
+import br.com.dindin.domain.persistence.ApiKeyRepository
 import br.com.dindin.infrastructure.security.KomgaPrincipal
 import br.com.dindin.infrastructure.security.TokenEncoder
 import br.com.dindin.infrastructure.security.apikey.ApiKeyGenerator
@@ -23,6 +24,7 @@ private val logger = KotlinLogging.logger {}
 @Service
 class KomgaUserLifecycle(
     private val userRepository: KomgaUserRepository,
+    private val apiKeyRepository: ApiKeyRepository,
     private val readProgressRepository: ReadProgressRepository,
     private val authenticationActivityRepository: AuthenticationActivityRepository,
     private val sessionRegistry: SessionRegistry,
@@ -39,11 +41,9 @@ class KomgaUserLifecycle(
   fun createUser(komgaUser: KomgaUser): KomgaUser {
     if (userRepository.existsByEmailIgnoreCase(komgaUser.email)) throw UserEmailAlreadyExistsException("A user with the same email already exists: ${komgaUser.email}")
 
-    userRepository.save(komgaUser.copy(password = passwordEncoder.encode(komgaUser.password)))
-
-    val createdUser = userRepository.findByIdOrNull(komgaUser.id)!!
-    logger.info { "User created: $createdUser" }
-    return createdUser
+    val saved = userRepository.save(komgaUser.copy(password = passwordEncoder.encode(komgaUser.password)))
+    logger.info { "User created: $saved" }
+    return saved
   }
 
 
@@ -107,12 +107,11 @@ class KomgaUserLifecycle(
             try {
                 val plainTextKey =
                     ApiKey(
-                        id = user.id,
                         userId = user,
                         pkey = apiKeyGenerator.generate(),
                         comment = commentTrimmed,
                     )
-                userRepository.save(plainTextKey.copy(pkey = tokenEncoder.encode(plainTextKey.pkey)))
+                apiKeyRepository.save(plainTextKey.copy(pkey = tokenEncoder.encode(plainTextKey.pkey)))
                 return plainTextKey
             } catch (e: Exception) {
                 logger.debug { "Failed to generate unique api key, attempt #$attempt" }
@@ -120,7 +119,6 @@ class KomgaUserLifecycle(
         }
         return null
     }
-
 
 
 
