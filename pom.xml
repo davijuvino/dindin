@@ -77,6 +77,17 @@
             <artifactId>kotlin-reflect</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
+        <!-- Kotlin compiler plugins to support JPA proxying for Kotlin classes -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-allopen</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-noarg</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
 
         <!-- Spring Boot starters -->
         <dependency>
@@ -434,7 +445,15 @@
                     <jvmTarget>21</jvmTarget> <!-- Updated to Java 21 -->
                     <compilerPlugins>
                         <plugin>spring</plugin>
+                        <plugin>all-open</plugin>
+                        <plugin>no-arg</plugin>
                     </compilerPlugins>
+                    <pluginOptions>
+                        <option>all-open:annotation=jakarta.persistence.Entity</option>
+                        <option>all-open:annotation=jakarta.persistence.MappedSuperclass</option>
+                        <option>all-open:annotation=jakarta.persistence.Embeddable</option>
+                        <option>no-arg:annotation=jakarta.persistence.Entity</option>
+                    </pluginOptions>
                     <args>
                         <arg>-Xjsr305=strict</arg>
                         <arg>-Xemit-jvm-type-annotations</arg>
