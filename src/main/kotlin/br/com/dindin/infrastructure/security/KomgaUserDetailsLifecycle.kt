@@ -50,16 +50,11 @@ class KomgaUserDetailsLifecycle(
     if (userRepository.existsByEmailIgnoreCase(user.username)) throw UserEmailAlreadyExistsException("A user with the same email already exists: ${user.username}")
 
     val komgaUser = KomgaUser(
-      email = user.username,
-      password = null,
-      roles = emptySet(),
-      sharedLibrariesIds = emptySet(),
-      sharedAllLibraries = false,
-      restrictions = ContentRestrictions(),
-      userId = 0L,
-      comment = null
+        email = user.username,
+        password = passwordEncoder.encode(user.password),
+        roles = user.authorities.toUserRoles(),
+        restrictions = ContentRestrictions()
     )
-
     userRepository.save(komgaUser)
     logger.info { "Created user: ${komgaUser.email}, roles: ${komgaUser.roles}" }
     return KomgaPrincipal(komgaUser)

@@ -47,16 +47,7 @@ class ClaimController(
 
       return userDetailsLifecycle
           .createUser(
-              KomgaUser(
-                  email = email,
-                  password = password,
-                  roles = UserRoles.entries.toSet(),
-                  sharedLibrariesIds = emptySet(),
-                  sharedAllLibraries = false,
-                  restrictions = ContentRestrictions(),
-                  userId = 0L,
-                  comment = null
-              ),
+              KomgaUser(email = email, password = password, roles = setOf(UserRoles.ADMIN), restrictions = ContentRestrictions())
           ).toDto()
   }
 

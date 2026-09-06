@@ -2,8 +2,6 @@ package br.com.dindin.interfaces
 
 
 import br.com.dindin.domain.model.ApiKey
-import br.com.dindin.domain.model.KomgaUser
-import org.gotson.komga.language.toUTCZoned
 import java.time.ZonedDateTime
 
 data class ApiKeyDto(
@@ -21,8 +19,8 @@ fun ApiKey.toDto() =
     userId = userId?.id ?: 0L,
     key = pkey,
     comment = comment,
-    createdDate = createdDate!!.toUTCZoned(),
-    lastModifiedDate = createdDate!!.toUTCZoned(),
+    createdDate = createdDate,
+    lastModifiedDate = createdDate,
   )
 
 fun ApiKeyDto.redacted() = copy(key = "*".repeat(6))

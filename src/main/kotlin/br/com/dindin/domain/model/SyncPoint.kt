@@ -21,7 +21,7 @@ open class SyncPoint(
     var apiKey: ApiKey? = null,
 
     @Column(name = "created_date", nullable = false)
-    var createdDate: ZonedDateTime = ZonedDateTime.now()
+    override var createdDate: ZonedDateTime = ZonedDateTime.now()
 ) : Auditable() {
 
     constructor() : this(id = 0, user = null, apiKey = null, createdDate = ZonedDateTime.now())

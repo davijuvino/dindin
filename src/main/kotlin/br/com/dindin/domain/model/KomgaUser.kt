@@ -8,7 +8,7 @@ import org.hibernate.annotations.BatchSize
 
 @Entity
 @Table(name = "users")
-open class KomgaUser(
+data class KomgaUser(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -86,13 +86,11 @@ open class KomgaUser(
 
     // Backwards-compatible helpers that attempt safe checks without forcing heavy loads
     fun canAccessBook(book: Book): Boolean {
-        // try to resolve library id in a safe way, prefer using Series/Library ids if available
         return try {
             val libId = book.series.library.id
             canAccessLibraryById(libId)
         } catch (_: Exception) {
-            // fallback to checking sharedLibraries collection but don't throw
-            sharedAllLibraries || runCatching { sharedLibraries.any { it.id == book.series.library.id } }.getOrDefault(false)
+            sharedAllLibraries || runCatching { sharedLibrariesIds.any { id -> id == book.series.library.id.toString() } }.getOrDefault(false)
         }
     }
 
@@ -101,7 +99,7 @@ open class KomgaUser(
             val libId = series.library.id
             canAccessLibraryById(libId)
         } catch (_: Exception) {
-            sharedAllLibraries || runCatching { sharedLibraries.any { it.id == series.library.id } }.getOrDefault(false)
+            sharedAllLibraries || runCatching { sharedLibrariesIds.any { id -> id == series.library.id.toString() } }.getOrDefault(false)
         }
     }
 
