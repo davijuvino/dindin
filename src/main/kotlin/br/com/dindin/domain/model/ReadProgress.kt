@@ -1,10 +1,10 @@
 package br.com.dindin.domain.model
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import org.springframework.data.annotation.CreatedDate
 import java.time.LocalDateTime
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
-import kotlin.jvm.Transient
 
 @Entity
 @Table(name = "read_progress")
@@ -12,8 +12,8 @@ import kotlin.jvm.Transient
 data class ReadProgress(
 
     @Id
-    @GeneratedValue
-    @Column(name = "id", nullable = false, unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     var id: Long = 0,
 
     @NotNull
@@ -32,14 +32,12 @@ data class ReadProgress(
     @Column(nullable = false)
     var completed: Boolean = false,
 
-    @Column(nullable = false)
+    @CreatedDate
+    @Column(name = "read_date", nullable = false, updatable = false)
     var readDate: LocalDateTime = LocalDateTime.now(),
 
     var deviceId: String = "",
 
     var deviceName: String = "",
-
-    @Transient
-    var locator: R2Locator? = null,
 
     ) : Auditable()
