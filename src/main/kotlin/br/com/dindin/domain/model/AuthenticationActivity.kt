@@ -4,6 +4,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
@@ -17,26 +18,42 @@ import java.time.LocalDateTime
 data class AuthenticationActivity(
 
     @Id
-    @GeneratedValue
-    @Column(name = "id", nullable = false, unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     var id: Long = 0,
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     var userId: KomgaUser,
-    val email: String? = null,
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "apikey_id", nullable = false)
     var apiKeyId: ApiKey,
-    val apiKeyComment: String? = null,
 
     val ip: String? = null,
     val userAgent: String? = null,
-    val success: Boolean,
+    val success: Boolean = false,
     val error: String? = null,
+
+    @Column(name = "date_time", nullable = false)
     val dateTime: LocalDateTime = LocalDateTime.now(),
+
     val source: String? = null,
-)
+) {
+    /**
+     * Default constructor for JPA.
+     */
+    constructor() : this(
+        id = 0,
+        userId = KomgaUser(),
+        apiKeyId = ApiKey(userId = KomgaUser(), pkey = "", comment = ""),
+        ip = null,
+        userAgent = null,
+        success = false,
+        error = null,
+        dateTime = LocalDateTime.now(),
+        source = null
+    )
+}
