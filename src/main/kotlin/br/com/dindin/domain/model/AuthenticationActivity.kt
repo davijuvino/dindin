@@ -13,11 +13,9 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import java.time.LocalDateTime
 
-
 @Entity
 @Table(name = "authentication_activity")
-data class AuthenticationActivity(
-
+open class AuthenticationActivity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -26,37 +24,35 @@ data class AuthenticationActivity(
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    var userId: KomgaUser,
+    var user: KomgaUser? = null,
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "apikey_id", nullable = false)
-    var apiKeyId: ApiKey,
+    var apiKey: ApiKey? = null,
 
     @NotBlank
     @Column(name = "email", nullable = false)
-    val email: String,
+    var email: String = "",
 
     @Column(name = "apiKeyComment", nullable = false)
-    val apiKeyComment: String,
+    var apiKeyComment: String = "",
 
-    val ip: String? = null,
-    val userAgent: String? = null,
-    val success: Boolean = false,
-    val error: String? = null,
+    var ip: String? = null,
+    var userAgent: String? = null,
+    var success: Boolean = false,
+    var error: String? = null,
 
     @Column(name = "date_time", nullable = false)
-    val dateTime: LocalDateTime = LocalDateTime.now(),
+    var dateTime: LocalDateTime = LocalDateTime.now(),
 
-    val source: String? = null,
-) {
-    /**
-     * Default constructor for JPA.
-     */
+    var source: String? = null
+) : Auditable() {
+
     constructor() : this(
         id = 0,
-        userId = KomgaUser(),
-        apiKeyId = ApiKey(userId = KomgaUser(), pkey = "", comment = ""),
+        user = null,
+        apiKey = null,
         email = "",
         apiKeyComment = "",
         ip = null,
@@ -66,4 +62,14 @@ data class AuthenticationActivity(
         dateTime = LocalDateTime.now(),
         source = null
     )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is AuthenticationActivity) return false
+        if (id == 0L || other.id == 0L) return this === other
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = if (id == 0L) System.identityHashCode(this) else id.hashCode()
+
 }

@@ -12,11 +12,9 @@ import jakarta.persistence.Table
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 
-
 @Entity
-@Table(name = "apikey")
-data class ApiKey(
-
+@Table(name = "api_key")
+open class ApiKey(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -25,14 +23,28 @@ data class ApiKey(
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    var userId: KomgaUser,
+    var userId: KomgaUser? = null,
 
     @NotBlank
     @Column(name = "pkey", nullable = false, unique = true)
-    val pkey: String,
+    var pkey: String = "",
 
     @NotBlank
     @Column(name = "comment", nullable = false)
-    val comment: String,
+    var comment: String = "",
+) : Auditable() {
 
-    ) : Auditable()
+    // JPA-friendly default constructor
+    constructor() : this(id = 0, userId = null, pkey = "", comment = "")
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ApiKey) return false
+        if (id == 0L || other.id == 0L) return this === other
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = if (id == 0L) System.identityHashCode(this) else id.hashCode()
+
+    override fun toString(): String = "ApiKey(id=$id, pkey='${pkey.take(8)}...', comment='$comment')"
+}
