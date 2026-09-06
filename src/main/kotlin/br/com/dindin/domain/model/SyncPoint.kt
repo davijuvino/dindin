@@ -1,6 +1,7 @@
 package br.com.dindin.domain.model
 
 import jakarta.persistence.*
+import jakarta.validation.constraints.NotNull
 import java.time.ZonedDateTime
 
 @Entity
@@ -11,11 +12,14 @@ data class SyncPoint(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,
 
-    @Column(name = "user_id", nullable = false)
-    var userId: Long = 0,
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    var user: KomgaUser,
 
-    @Column(name = "api_key_id")
-    var apiKeyId: Long? = null,
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "api_key_id", nullable = true)
+    var apiKey: ApiKey? = null,
 
     @Column(name = "created_date", nullable = false)
     var createdDate: ZonedDateTime = ZonedDateTime.now()
