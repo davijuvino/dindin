@@ -6,6 +6,7 @@ import java.net.URL
 import java.nio.file.Path
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import java.nio.file.Paths
 
 @Entity
@@ -17,13 +18,13 @@ class Library(
     @Column(name = "name", nullable = false, unique = true)
     val name: String,
 
-    @NotBlank
+    @NotNull
     @Column(name = "root", nullable = false)
     val root: URL
 ) : Auditable() {
     @Id
-    @GeneratedValue
-    @Column(name = "id", nullable = false, unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     var id: Long = 0
 
     constructor(name: String, root: String) : this(name, Paths.get(root).toUri().toURL())
