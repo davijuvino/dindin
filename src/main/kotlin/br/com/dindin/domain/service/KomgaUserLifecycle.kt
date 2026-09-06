@@ -4,6 +4,7 @@ import br.com.dindin.domain.model.ApiKey
 import br.com.dindin.domain.model.DuplicateNameException
 import br.com.dindin.domain.model.KomgaUser
 import br.com.dindin.domain.model.UserEmailAlreadyExistsException
+import br.com.dindin.domain.persistence.ApiKeyRepository
 import br.com.dindin.domain.persistence.AuthenticationActivityRepository
 import br.com.dindin.domain.persistence.KomgaUserRepository
 import br.com.dindin.domain.persistence.ReadProgressRepository
@@ -31,6 +32,7 @@ class KomgaUserLifecycle(
     private val transactionTemplate: TransactionTemplate,
     private val passwordEncoder: PasswordEncoder,
     private val tokenEncoder: TokenEncoder,
+    private val apiKeyRepository: ApiKeyRepository,
 
     ) {
 
@@ -101,18 +103,18 @@ class KomgaUserLifecycle(
         comment: String,
     ): ApiKey? {
         val commentTrimmed = comment.trim()
-        if (userRepository.existsApiKeyByCommentAndUserId(commentTrimmed, user.id))
+        if (apiKeyRepository.existsByCommentAndUserId_Id(commentTrimmed, user.id))
             throw DuplicateNameException("api key comment already exists for this user", "ERR_1034")
         for (attempt in 1..10) {
             try {
                 val plainTextKey =
                     ApiKey(
-                        id = user.id,
+                        id = 0,
                         userId = user,
                         pkey = apiKeyGenerator.generate(),
                         comment = commentTrimmed,
                     )
-                userRepository.save(plainTextKey.copy(pkey = tokenEncoder.encode(plainTextKey.pkey)))
+                apiKeyRepository.save(plainTextKey.copy(pkey = tokenEncoder.encode(plainTextKey.pkey)))
                 return plainTextKey
             } catch (e: Exception) {
                 logger.debug { "Failed to generate unique api key, attempt #$attempt" }
@@ -120,7 +122,6 @@ class KomgaUserLifecycle(
         }
         return null
     }
-
 
 
 

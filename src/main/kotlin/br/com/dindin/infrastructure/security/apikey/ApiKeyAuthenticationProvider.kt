@@ -1,6 +1,6 @@
 package br.com.dindin.infrastructure.security.apikey
 
-import br.com.dindin.domain.persistence.KomgaUserRepository
+import br.com.dindin.domain.persistence.ApiKeyRepository
 import br.com.dindin.infrastructure.security.KomgaPrincipal
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
  */
 @Component
 class ApiKeyAuthenticationProvider(
-    private val userRepository: KomgaUserRepository,
+    private val apiKeyRepository: ApiKeyRepository,
 ) : AbstractUserDetailsAuthenticationProvider() {
 
     override fun additionalAuthenticationChecks(
@@ -23,22 +23,22 @@ class ApiKeyAuthenticationProvider(
     ) = Unit
 
     override fun retrieveUser(
-    username: String,
-    authentication: UsernamePasswordAuthenticationToken,
-  ): UserDetails =
-    userRepository.findByApiKey(authentication.credentials.toString())?.let { (user, apiKey) ->
-        KomgaPrincipal(user, apiKey = apiKey, name = authentication.name)
-    } ?: throw BadCredentialsException("Bad credentials")
+        username: String,
+        authentication: UsernamePasswordAuthenticationToken,
+    ): UserDetails =
+        apiKeyRepository.findByPkey(authentication.credentials.toString())?.let { apiKey ->
+            KomgaPrincipal(apiKey.userId, apiKey = apiKey, name = authentication.name)
+        } ?: throw BadCredentialsException("Bad credentials")
 
-  override fun createSuccessAuthentication(
-      principal: Any,
-      authentication: Authentication,
-      user: UserDetails
-  ): Authentication =
-    ApiKeyAuthenticationToken.Companion
-      .authenticated(principal, authentication.credentials, user.authorities)
-      .apply { details = authentication.details }
-      .also { logger.debug("Authenticated user") }
+    override fun createSuccessAuthentication(
+        principal: Any,
+        authentication: Authentication,
+        user: UserDetails
+    ): Authentication =
+        ApiKeyAuthenticationToken.Companion
+            .authenticated(principal, authentication.credentials, user.authorities)
+            .apply { details = authentication.details }
+            .also { logger.debug("Authenticated user") }
 
-  override fun supports(authentication: Class<*>): Boolean = ApiKeyAuthenticationToken::class.java.isAssignableFrom(authentication)
+    override fun supports(authentication: Class<*>): Boolean = ApiKeyAuthenticationToken::class.java.isAssignableFrom(authentication)
 }

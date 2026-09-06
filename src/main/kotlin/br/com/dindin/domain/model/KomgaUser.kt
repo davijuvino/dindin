@@ -53,14 +53,6 @@ data class KomgaUser(
 
     var comment: String? = null
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "user_apikey",
-        joinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")],
-        inverseJoinColumns = [JoinColumn(name = "api_key_id", referencedColumnName = "id")]
-    )
-    var userId: KomgaUser? = null
-
     /**
      * Default constructor for JPA.
      */
@@ -93,19 +85,4 @@ data class KomgaUser(
 
     fun isAdmin() = roles.contains(UserRoles.ADMIN)
 
-    fun canAccessAllLibraries(): Boolean = sharedAllLibraries || isAdmin()
-
-    fun canAccessBook(book: Book): Boolean {
-        return sharedAllLibraries || sharedLibraries.any { it.id == book.series.library.id }
-    }
-
-    fun canAccessSeries(series: Series): Boolean {
-        return sharedAllLibraries || sharedLibraries.any { it.id == series.library.id }
-    }
-
-    fun canAccessLibrary(library: Library): Boolean {
-        return sharedAllLibraries || sharedLibraries.any { it.id == library.id }
-    }
-
-    override fun toString(): String = "KomgaUser(id=$id, email='$email', roles=$roles, sharedAllLibraries=$sharedAllLibraries, createdDate=$createdDate, lastModifiedDate=$lastModifiedDate)"
 }
