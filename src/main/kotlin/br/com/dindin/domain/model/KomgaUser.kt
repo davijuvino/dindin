@@ -70,5 +70,62 @@ open class KomgaUser(
 
     override fun hashCode(): Int = if (id == 0L) System.identityHashCode(this) else id.hashCode()
 
+    // Avoid forcing LAZY collections in logs
     override fun toString(): String = "KomgaUser(id=$id, email='$email', sharedAllLibraries=$sharedAllLibraries, createdDate=$createdDate, lastModifiedDate=$lastModifiedDate)"
+
+    fun isAdmin(): Boolean = runCatching { roles.contains(UserRoles.ADMIN) }.getOrDefault(false)
+
+    fun canAccessAllLibraries(): Boolean = sharedAllLibraries || isAdmin()
+
+    // Prefer checking by stored library ids (sharedLibrariesIds) to avoid initializing LAZY collections
+    fun canAccessLibraryById(libraryId: Long): Boolean = sharedAllLibraries || sharedLibrariesIds.contains(libraryId.toString()) || isAdmin()
+
+    fun canAccessBookByLibraryId(libraryId: Long): Boolean = canAccessLibraryById(libraryId)
+
+    fun canAccessSeriesByLibraryId(libraryId: Long): Boolean = canAccessLibraryById(libraryId)
+
+    // Backwards-compatible helpers that attempt safe checks without forcing heavy loads
+    fun canAccessBook(book: Book): Boolean {
+        // try to resolve library id in a safe way, prefer using Series/Library ids if available
+        return try {
+            val libId = book.series.library.id
+            canAccessLibraryById(libId)
+        } catch (_: Exception) {
+            // fallback to checking sharedLibraries collection but don't throw
+            sharedAllLibraries || runCatching { sharedLibraries.any { it.id == book.series.library.id } }.getOrDefault(false)
+        }
+    }
+
+    fun canAccessSeries(series: Series): Boolean {
+        return try {
+            val libId = series.library.id
+            canAccessLibraryById(libId)
+        } catch (_: Exception) {
+            sharedAllLibraries || runCatching { sharedLibraries.any { it.id == series.library.id } }.getOrDefault(false)
+        }
+    }
+
+    fun canAccessLibrary(library: Library): Boolean {
+        return canAccessLibraryById(library.id)
+    }
+
+    /**
+     * Return the list of LibraryIds this user is authorized to view, intersecting the provided list of LibraryIds.
+     * @param libraryIds an optional list of LibraryIds to filter on
+     * @return a list of authorised LibraryIds, or null if the user is authorised to see all libraries
+     */
+    fun getAuthorizedLibraryIds(libraryIds: Collection<String>?): Collection<String>? =
+        when {
+            // limited user & libraryIds are specified: filter on provided libraries intersecting user's authorized libraries
+            !canAccessAllLibraries() && libraryIds != null -> libraryIds.intersect(sharedLibrariesIds)
+
+            // limited user: filter on user's authorized libraries
+            !canAccessAllLibraries() && libraryIds == null -> sharedLibrariesIds
+
+            // non-limited user & libraryIds are specified: filter on provided libraries
+            libraryIds != null -> libraryIds
+
+            // non-limited user & no libraryIds specified: return null, meaning no filtering
+            else -> null
+        }
 }
