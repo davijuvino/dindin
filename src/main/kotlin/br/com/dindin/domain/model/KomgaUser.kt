@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import org.hibernate.annotations.BatchSize
 
 @Entity
 @Table(name = "users")
@@ -21,13 +22,17 @@ open class KomgaUser(
     @Column(name = "password")
     var password: String? = null,
 
+    @ElementCollection(targetClass = UserRoles::class, fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_roles", joinColumns = [JoinColumn(name = "user_id")])
     @Enumerated(EnumType.STRING)
-    @Column(name = "roles")
-    var roles: Set<UserRoles> = mutableSetOf(),
+    @Column(name = "role")
+    @BatchSize(size = 20)
+    var roles: Set<UserRoles> = emptySet(),
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_shared_libraries_ids", joinColumns = [JoinColumn(name = "user_id")])
     @Column(name = "library_id")
+    @BatchSize(size = 50)
     var sharedLibrariesIds: Set<String> = emptySet(),
 
     @NotNull
