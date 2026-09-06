@@ -9,6 +9,11 @@ import jakarta.validation.constraints.NotNull
 @Entity
 @Table(name = "users")
 data class KomgaUser(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    val id: Long = 0,
+
     @Email(regexp = ".+@.+\\..+")
     @NotBlank
     @Column(name = "email", nullable = false, unique = true)
@@ -16,7 +21,7 @@ data class KomgaUser(
 
     @NotBlank
     @Column(name = "password", nullable = false)
-    var password: String?,
+    var password: String,
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role", joinColumns = [JoinColumn(name = "user_id")])
@@ -24,20 +29,22 @@ data class KomgaUser(
     @Enumerated(EnumType.STRING)
     val roles: Set<UserRoles> = mutableSetOf(),
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_shared_libraries_ids", joinColumns = [JoinColumn(name = "user_id")])
+    @Column(name = "library_id")
     val sharedLibrariesIds: Set<String> = emptySet(),
 
     @NotNull
     @Column(name = "shared_all_libraries", nullable = false)
     var sharedAllLibraries: Boolean = false,
 
-    val restrictions: ContentRestrictions = ContentRestrictions()
+    @Embedded
+    val restrictions: ContentRestrictions = ContentRestrictions(),
+
+    @Column(name = "comment", nullable = true)
+    var comment: String? = null
 
 ) : Auditable() {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    var id: Long = 0
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -51,23 +58,18 @@ data class KomgaUser(
     @JoinColumn(name = "api_key_id", referencedColumnName = "id")
     var apiKey: ApiKey? = null
 
-    var comment: String? = null
-
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "user_apikey",
-        joinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")],
-        inverseJoinColumns = [JoinColumn(name = "api_key_id", referencedColumnName = "id")]
-    )
-    var userId: KomgaUser? = null
-
     /**
      * Default constructor for JPA.
      */
     constructor() : this(
+        id = 0,
         email = "",
-        password = null,
-        roles = emptySet()
+        password = "",
+        roles = emptySet(),
+        sharedLibrariesIds = emptySet(),
+        sharedAllLibraries = false,
+        restrictions = ContentRestrictions(),
+        comment = null
     )
 
 
