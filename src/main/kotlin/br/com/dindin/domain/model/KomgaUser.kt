@@ -70,5 +70,5 @@ open class KomgaUser(
 
     override fun hashCode(): Int = if (id == 0L) System.identityHashCode(this) else id.hashCode()
 
-    override fun toString(): String = "KomgaUser(id=$id, email='$email', roles=$roles, sharedAllLibraries=$sharedAllLibraries, createdDate=$createdDate, lastModifiedDate=$lastModifiedDate)"
+    override fun toString(): String = "KomgaUser(id=$id, email='$email', sharedAllLibraries=$sharedAllLibraries, createdDate=$createdDate, lastModifiedDate=$lastModifiedDate)"
 }

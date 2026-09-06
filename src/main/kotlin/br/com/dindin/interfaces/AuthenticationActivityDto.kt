@@ -8,10 +8,10 @@ import org.gotson.komga.language.toUTC
 import java.time.LocalDateTime
 
 data class AuthenticationActivityDto(
-  val userId: KomgaUser,
-  val email: String,
-  val apiKeyId: ApiKey,
-  val apiKeyComment: String,
+  val userId: Long,
+  val email: String?,
+  val apiKeyId: Long,
+  val apiKeyComment: String? = null,
   val ip: String?,
   val userAgent: String?,
   val success: Boolean,
@@ -23,9 +23,9 @@ data class AuthenticationActivityDto(
 
 fun AuthenticationActivity.toDto() =
   AuthenticationActivityDto(
-    userId = userId,
+    userId = user?.id ?: 0L,
     email = email,
-    apiKeyId = apiKeyId,
+    apiKeyId = apiKey?.id ?: 0L,
     apiKeyComment = apiKeyComment,
     ip = ip,
     userAgent = userAgent,

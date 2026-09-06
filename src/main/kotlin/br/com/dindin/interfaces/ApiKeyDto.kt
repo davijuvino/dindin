@@ -8,7 +8,7 @@ import java.time.ZonedDateTime
 
 data class ApiKeyDto(
   val id: Long,
-  val userId: KomgaUser,
+  val userId: Long,
   val key: String,
   val comment: String,
   val createdDate: ZonedDateTime,
@@ -18,7 +18,7 @@ data class ApiKeyDto(
 fun ApiKey.toDto() =
   ApiKeyDto(
     id = id,
-    userId = userId,
+    userId = userId?.id ?: 0L,
     key = pkey,
     comment = comment,
     createdDate = createdDate!!.toUTCZoned(),
