@@ -14,7 +14,7 @@ fun KomgaUser.toDto(): UserDto {
     return UserDto(
         id = id,
         email = email,
-        roles = rolesSet + "USER"
+        roles = rolesSet
     )
 }
 
