@@ -8,4 +8,5 @@ interface ReadProgressRepository : JpaRepository<ReadProgress, Long> {
     fun findAllByBookIdInAndUser_Id(bookIds: Collection<String>, userId: Long): List<ReadProgress>
     fun deleteByUser_Id(userId: Long)
     fun deleteByBookId(bookId: String)
+    fun deleteByUserId(lng: kotlin.Long)
 }

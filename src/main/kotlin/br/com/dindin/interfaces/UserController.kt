@@ -41,6 +41,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
+import kotlin.code
+import kotlin.collections.sort
+import kotlin.text.contains
 
 private val logger = KotlinLogging.logger {}
 
@@ -76,7 +79,7 @@ class UserController(
     }
 
     @GetMapping
-    fun getUsers(): List<UserDto> = userRepository.findAll().map { it.toDto() }
+    fun getUsers(): List<UserDto> = userRepository.findAll().toList().map { it.toDto() }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -101,8 +104,6 @@ class UserController(
 
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    //@PreAuthorize("hasRole('ADMIN') and #principal.user.id != #id")
-    //@Operation(summary = "Delete user", tags = [TagNames.USERS])
     fun deleteUserById(
         @PathVariable id: Long,
         @AuthenticationPrincipal principal: KomgaPrincipal,
@@ -123,7 +124,6 @@ class UserController(
         userRepository.findByIdOrNull(id)?.let { existing ->
             val updatedUser =
                 with(patch) {
-                    // calcula novos valores de restrictions de forma segura
                     val newAgeRestriction = if (isSet("ageRestriction")) {
                         if (ageRestriction == null || ageRestriction?.restriction == AllowExcludeDto.NONE)
                             null
@@ -153,8 +153,6 @@ class UserController(
 
     @PatchMapping("{id}/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    //@PreAuthorize("hasRole('ADMIN') or #principal.user.id == #id")
-    //@Operation(summary = "Update user's password", tags = [TagNames.USERS])
     fun updatePasswordByUserId(
         @PathVariable id: Long,
         @AuthenticationPrincipal principal: KomgaPrincipal,
@@ -169,7 +167,6 @@ class UserController(
 
     @GetMapping("me/authentication-activity")
     @PageableAsQueryParam
-    //@Operation(summary = "Retrieve authentication activity for the current user", tags = [TagNames.CURRENT_USER])
     fun getAuthenticationActivityForCurrentUser(
         @AuthenticationPrincipal principal: KomgaPrincipal,
         @RequestParam(name = "unpaged", required = false) unpaged: Boolean = false,
@@ -196,8 +193,6 @@ class UserController(
     }
 
     @GetMapping("{id}/authentication-activity/latest")
-    //@PreAuthorize("hasRole('ADMIN') or #principal.user.id == #id")
-    //@Operation(summary = "Retrieve latest authentication activity for a user", tags = [TagNames.USERS])
     fun getLatestAuthenticationActivityByUserId(
         @PathVariable id: Long,
         @AuthenticationPrincipal principal: KomgaPrincipal,
@@ -208,17 +203,15 @@ class UserController(
                 ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
-    @GetMapping("me/api-keys")
-    //@Operation(summary = "Retrieve API keys", tags = [TagNames.API_KEYS])
-    fun getApiKeysForCurrentUser(
-        @AuthenticationPrincipal principal: KomgaPrincipal,
-    ): Collection<ApiKeyDto> {
-        if (demo && !principal.user.isAdmin()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
-        return userRepository.findApiKeyByUserId(principal.user.id).map { it.toDto().redacted() }
-    }
+    //@GetMapping("me/api-keys")
+    //fun getApiKeysForCurrentUser(
+      //  @AuthenticationPrincipal principal: KomgaPrincipal,
+    //): Collection<ApiKeyDto> {
+      //  if (demo && !principal.user.isAdmin()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
+       // return userRepository.findApiKeyByUserId(principal.user.id).map { }
+    //}
 
     @PostMapping("me/api-keys")
-    //@Operation(summary = "Create API key", tags = [TagNames.API_KEYS])
     fun createApiKeyForCurrentUser(
         @AuthenticationPrincipal principal: KomgaPrincipal,
         @Valid @RequestBody apiKeyRequest: ApiKeyRequestDto,
@@ -234,16 +227,12 @@ class UserController(
 
     @DeleteMapping("me/api-keys/{keyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    //@Operation(summary = "Delete API key", tags = [TagNames.API_KEYS])
     fun deleteApiKeyByKeyId(
         @AuthenticationPrincipal principal: KomgaPrincipal,
         @PathVariable keyId: Long,
     ) {
-        if (!userRepository.existsApiKeyByIdAndUserId(keyId, principal.user.id))
-            throw ResponseStatusException(HttpStatus.NOT_FOUND)
-        userRepository.deleteApiKeyByIdAndUserId(keyId, principal.user.id)
+        if (!principal.user.isAdmin()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
     }
-
 
     data class UserWithSharedLibrariesDto(
         val id: Long,

@@ -6,4 +6,8 @@ import org.springframework.data.repository.CrudRepository
 interface KomgaUserRepository : CrudRepository<KomgaUser, Long> {
     fun existsByEmailIgnoreCase(email: String): Boolean
     fun findByEmailIgnoreCase(email: String): KomgaUser?
+    fun findApiKeyByUserId(lng: Long): List<KomgaUser>
+    fun existsApiKeyByIdAndUserId(keyId: Long, lng: Long)
+    fun deleteApiKeyByIdAndUserId(keyId: Long, lng: Long)
+
 }

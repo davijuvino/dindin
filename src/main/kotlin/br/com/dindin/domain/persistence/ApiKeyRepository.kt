@@ -11,4 +11,5 @@ interface ApiKeyRepository : JpaRepository<ApiKey, Long> {
     fun existsByIdAndUser_Id(id: Long, userId: Long): Boolean
     fun deleteByIdAndUser_Id(id: Long, userId: Long)
     fun deleteByUser_Id(userId: Long)
+    fun existsByCommentAndUserId(string: kotlin.String, lng: kotlin.Long): kotlin.Boolean
 }

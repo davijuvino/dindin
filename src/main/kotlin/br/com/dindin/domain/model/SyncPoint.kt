@@ -2,6 +2,7 @@ package br.com.dindin.domain.model
 
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
+import java.time.Instant
 import java.time.ZonedDateTime
 
 @Entity
@@ -21,10 +22,10 @@ open class SyncPoint(
     var apiKey: ApiKey? = null,
 
     @Column(name = "created_date", nullable = false)
-    override var createdDate: ZonedDateTime = ZonedDateTime.now()
+    override var createdDate: Instant? = Instant.now()
 ) : Auditable() {
 
-    constructor() : this(id = 0, user = null, apiKey = null, createdDate = ZonedDateTime.now())
+    constructor() : this(id = 0, user = null, apiKey = null, createdDate = ZonedDateTime.now() as Instant?)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
