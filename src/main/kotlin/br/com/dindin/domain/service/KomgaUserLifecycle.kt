@@ -4,11 +4,11 @@ import br.com.dindin.domain.model.ApiKey
 import br.com.dindin.domain.model.DuplicateNameException
 import br.com.dindin.domain.model.KomgaUser
 import br.com.dindin.domain.model.UserEmailAlreadyExistsException
+import br.com.dindin.domain.persistence.ApiKeyRepository
 import br.com.dindin.domain.persistence.AuthenticationActivityRepository
 import br.com.dindin.domain.persistence.KomgaUserRepository
 import br.com.dindin.domain.persistence.ReadProgressRepository
 import br.com.dindin.domain.persistence.SyncPointRepository
-import br.com.dindin.domain.persistence.ApiKeyRepository
 import br.com.dindin.infrastructure.security.KomgaPrincipal
 import br.com.dindin.infrastructure.security.TokenEncoder
 import br.com.dindin.infrastructure.security.apikey.ApiKeyGenerator
@@ -33,40 +33,42 @@ class KomgaUserLifecycle(
     private val transactionTemplate: TransactionTemplate,
     private val passwordEncoder: PasswordEncoder,
     private val tokenEncoder: TokenEncoder,
+) {
 
-    ) {
+    @Throws(UserEmailAlreadyExistsException::class)
+    fun createUser(komgaUser: KomgaUser): KomgaUser {
+        if (userRepository.existsByEmailIgnoreCase(komgaUser.email)) {
+            throw UserEmailAlreadyExistsException("A user with the same email already exists: ${komgaUser.email}")
+        }
 
+        val saved = userRepository.save(komgaUser.copy(password = passwordEncoder.encode(komgaUser.password)))
+        logger.info { "User created: $saved" }
+        return saved
+    }
 
-  @Throws(UserEmailAlreadyExistsException::class)
-  fun createUser(komgaUser: KomgaUser): KomgaUser {
-    if (userRepository.existsByEmailIgnoreCase(komgaUser.email)) throw UserEmailAlreadyExistsException("A user with the same email already exists: ${komgaUser.email}")
+    fun countUsers() = userRepository.count()
 
-    val saved = userRepository.save(komgaUser.copy(password = passwordEncoder.encode(komgaUser.password)))
-    logger.info { "User created: $saved" }
-    return saved
-  }
-
-
-  fun countUsers() = userRepository.count()
-
-  fun updateUser(user: KomgaUser) {
+    fun updateUser(user: KomgaUser) {
         val existing = userRepository.findByIdOrNull(user.id)
         requireNotNull(existing) { "User doesn't exist, cannot update: $user" }
 
-      val toUpdate = user.copy(password = existing.password)
-      logger.info { "Update user: $toUpdate" }
-      userRepository.save(toUpdate)
-  }
+        val toUpdate = user.copy(password = existing.password)
+        logger.info { "Update user: $toUpdate" }
+        userRepository.save(toUpdate)
+    }
 
-  fun updatePassword(
+    fun updatePassword(
         user: KomgaUser,
         newPassword: String,
         expireSessions: Boolean,
-  ) {
-      logger.info { "Changing password for user ${user.email}" }
-      val updatedUser = user.copy(password = passwordEncoder.encode(newPassword))
-      userRepository.save(updatedUser)
-  }
+    ) {
+        logger.info { "Changing password for user ${user.email}" }
+        val updatedUser = user.copy(password = passwordEncoder.encode(newPassword))
+        userRepository.save(updatedUser)
+        if (expireSessions) {
+            expireSessions(user)
+        }
+    }
 
     fun expireSessions(user: KomgaUser) {
         logger.info { "Expiring all sessions for user: ${user.email}" }
@@ -78,19 +80,19 @@ class KomgaUserLifecycle(
             }
     }
 
-
-  fun deleteUser(user: KomgaUser) {
+    fun deleteUser(user: KomgaUser) {
         logger.info { "Deleting user: $user" }
 
         transactionTemplate.executeWithoutResult {
-            readProgressRepository.deleteByUserId(user.id)
-            authenticationActivityRepository.deleteById(user.id)
+            readProgressRepository.deleteByUser_Id(user.id)
+            authenticationActivityRepository.deleteByUserId(user)
+            apiKeyRepository.deleteByUser_Id(user.id)
             syncPointRepository.deleteById(user.id)
             userRepository.deleteById(user.id)
         }
 
-      expireSessions(user)
-  }
+        expireSessions(user)
+    }
 
     /**
      * Create and persist an API key for the user.
@@ -101,27 +103,25 @@ class KomgaUserLifecycle(
         comment: String,
     ): ApiKey? {
         val commentTrimmed = comment.trim()
-        if (apiKeyRepository.existsByCommentAndUserId(commentTrimmed, user.id))
+        if (apiKeyRepository.existsByCommentAndUser_Id(commentTrimmed, user.id)) {
             throw DuplicateNameException("api key comment already exists for this user", "ERR_1034")
+        }
+
         for (attempt in 1..10) {
             try {
-                val plainTextKey = ApiKey(
-                    id = 0L, // Ajustado para usar um valor padrão ou gerado
+                val rawKey = apiKeyGenerator.generate()
+                val apiKey = ApiKey(
+                    id = 0L,
                     user = user,
-                    pkey = apiKeyGenerator.generate(),
+                    pkey = rawKey,
                     comment = commentTrimmed,
                 )
-                val encodedKey = plainTextKey.copy(pkey = tokenEncoder.encode(plainTextKey.pkey))
-                apiKeyRepository.save(encodedKey)
-                return encodedKey
+                apiKeyRepository.save(apiKey)
+                return apiKey
             } catch (e: Exception) {
                 logger.debug { "Failed to generate unique api key, attempt #$attempt" }
             }
         }
         return null
     }
-
-
-
-
 }

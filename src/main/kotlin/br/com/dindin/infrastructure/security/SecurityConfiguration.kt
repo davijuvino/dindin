@@ -36,12 +36,8 @@ class SecurityConfiguration(
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .cors { cors ->
-                cors.configurationSource(corsConfigurationSource())
-            }
+            .cors { cors -> cors.configurationSource(corsConfigurationSource()) }
             .csrf { csrf -> csrf.disable() }
-
-            // Headers de segurança modernos
             .headers { headers ->
                 headers
                     .frameOptions { frameOptions -> frameOptions.sameOrigin() }
@@ -52,18 +48,14 @@ class SecurityConfiguration(
                         csp.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'")
                     }
             }
-
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(EndpointRequest.toAnyEndpoint()).hasRole("ADMIN")
                     .requestMatchers("/h2-console/**").permitAll()
-                    //.requestMatchers("/api/**", "/opds/**").hasRole("USER")
                     .requestMatchers("/api/v1/users").permitAll()
                     .anyRequest().permitAll()
             }
-
             .httpBasic { basic -> basic.realmName("Komga") }
-
             .logout { logout ->
                 logout
                     .logoutUrl("/api/v1/users/logout")
@@ -72,7 +64,6 @@ class SecurityConfiguration(
                     .clearAuthentication(true)
                     .invalidateHttpSession(true)
             }
-
             .sessionManagement { session ->
                 session
                     .maximumSessions(10)
@@ -80,10 +71,8 @@ class SecurityConfiguration(
                     .sessionRegistry(sessionRegistry)
             }
 
-        // Configuração moderna de Remember-Me
         if (!komgaProperties.rememberMe.key.isNullOrBlank()) {
             logger.info { "RememberMe is active, validity: ${komgaProperties.rememberMe.validity}s" }
-
             http.rememberMe { remember ->
                 remember
                     .key(komgaProperties.rememberMe.key)
@@ -92,55 +81,49 @@ class SecurityConfiguration(
                     .userDetailsService(komgaUserDetailsService)
                     .rememberMeParameter("remember-me")
                     .useSecureCookie(true)
-
             }
-        }
-
-        http.rememberMe {
-            it.rememberMeServices(
-                TokenBasedRememberMeServices(komgaSettingsProvider.getRememberMeKey(), komgaUserDetailsService).apply {
-                    setTokenValiditySeconds(komgaSettingsProvider.rememberMeDuration.inWholeSeconds.toInt())
-                    setAuthenticationDetailsSource(userAgentWebAuthenticationDetailsSource)
-                    setCookieName("komga-remember-me")
-                }
-            )
+        } else {
+            http.rememberMe {
+                it.rememberMeServices(
+                    TokenBasedRememberMeServices(komgaSettingsProvider.getRememberMeKey(), komgaUserDetailsService).apply {
+                        setTokenValiditySeconds(komgaSettingsProvider.rememberMeDuration.inWholeSeconds.toInt())
+                        setAuthenticationDetailsSource(userAgentWebAuthenticationDetailsSource)
+                        setCookieName("komga-remember-me")
+                    }
+                )
+            }
         }
 
         return http.build()
     }
 
-
     @Bean
-    fun corsConfigurationSource(): CorsConfigurationSource {
-        return UrlBasedCorsConfigurationSource().apply {
-            registerCorsConfiguration(
-                "/**",
-                CorsConfiguration().apply {
-                    allowedOriginPatterns = listOf("http://localhost:8081", "http://localhost:*")
-                    allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD")
-                    allowedHeaders = listOf("*")
-                    exposedHeaders = listOf("Authorization", "Content-Disposition")
-                    allowCredentials = true
-                    maxAge = 3600L
-                }
-            )
-        }
+    fun corsConfigurationSource(): CorsConfigurationSource = UrlBasedCorsConfigurationSource().apply {
+        registerCorsConfiguration(
+            "/**",
+            CorsConfiguration().apply {
+                allowedOriginPatterns = listOf("http://localhost:8081", "http://localhost:*")
+                allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD")
+                allowedHeaders = listOf("*")
+                exposedHeaders = listOf("Authorization", "Content-Disposition")
+                allowCredentials = true
+                maxAge = 3600L
+            }
+        )
     }
 
     @Bean
     @Profile("dev")
-    fun devCorsConfigurationSource(): CorsConfigurationSource {
-        return UrlBasedCorsConfigurationSource().apply {
-            registerCorsConfiguration(
-                "/**",
-                CorsConfiguration().apply {
-                    allowedOriginPatterns = listOf("*")
-                    allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD")
-                    allowedHeaders = listOf("*")
-                    allowCredentials = true
-                    maxAge = 3600L
-                }
-            )
-        }
+    fun devCorsConfigurationSource(): CorsConfigurationSource = UrlBasedCorsConfigurationSource().apply {
+        registerCorsConfiguration(
+            "/**",
+            CorsConfiguration().apply {
+                allowedOriginPatterns = listOf("*")
+                allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD")
+                allowedHeaders = listOf("*")
+                allowCredentials = true
+                maxAge = 3600L
+            }
+        )
     }
 }
