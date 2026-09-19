@@ -1,8 +1,27 @@
 package br.com.dindin.interfaces
 
-import br.com.dindin.domain.model.ApiKey
+import br.com.dindin.domain.model.AgeRestriction
+import br.com.dindin.domain.model.ContentRestrictions
+import br.com.dindin.domain.model.DuplicateNameException
 import br.com.dindin.domain.model.KomgaUser
+import br.com.dindin.domain.model.UserEmailAlreadyExistsException
+import br.com.dindin.domain.model.UserRoles
 import br.com.dindin.domain.persistence.ApiKeyRepository
+import br.com.dindin.domain.persistence.AuthenticationActivityRepository
+import br.com.dindin.domain.persistence.KomgaUserRepository
+import br.com.dindin.domain.persistence.LibraryRepository
+import br.com.dindin.domain.service.KomgaUserLifecycle
+import br.com.dindin.infrastructure.security.KomgaPrincipal
+import br.com.dindin.infrastructure.util.UnpagedSorted
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.swagger.v3.oas.annotations.Parameter
+import jakarta.validation.Valid
+import org.springdoc.core.converters.models.PageableAsQueryParam
+import org.springframework.core.env.Environment
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -18,6 +37,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("api/v1/users", produces = [MediaType.APPLICATION_JSON_VALUE])
