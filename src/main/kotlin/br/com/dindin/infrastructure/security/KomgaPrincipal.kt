@@ -15,24 +15,12 @@ class KomgaPrincipal(
     val apiKey: ApiKey? = null,
     private val name: String = user.email,
 ) : UserDetails {
-
-  override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-    return user.roles.map { it.name }
-      .toMutableSet()
-      .apply { add("USER") }
-      .map { SimpleGrantedAuthority("ROLE_$it") }
-      .toMutableSet()
-  }
-
-  override fun isEnabled() = true
-
-  override fun getUsername() = user.email
-
-  override fun isCredentialsNonExpired() = true
-
-  override fun getPassword() = user.password
-
-  override fun isAccountNonExpired() = true
-
-  override fun isAccountNonLocked() = true
+    override fun getAuthorities(): MutableCollection<out GrantedAuthority> =
+        user.roles.map { SimpleGrantedAuthority("ROLE_${it.name}") }.toMutableSet()
+    override fun isEnabled() = true
+    override fun getUsername() = user.email
+    override fun isCredentialsNonExpired() = true
+    override fun getPassword() = user.password
+    override fun isAccountNonExpired() = true
+    override fun isAccountNonLocked() = true
 }

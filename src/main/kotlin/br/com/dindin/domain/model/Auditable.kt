@@ -11,11 +11,8 @@ import java.time.Instant
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
 abstract class Auditable {
-    @CreatedDate
-    @Column(name = "created_date", updatable = false, nullable = false)
+    @CreatedDate @Column(name = "created_date", updatable = false, nullable = false)
     open var createdDate: Instant = Instant.now()
-
-    @LastModifiedDate
-    @Column(name = "last_modified_date", nullable = false)
+    @LastModifiedDate @Column(name = "last_modified_date", nullable = false)
     var lastModifiedDate: Instant = Instant.now()
 }
