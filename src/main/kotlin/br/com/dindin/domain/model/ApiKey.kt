@@ -11,9 +11,6 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
 
 @Entity
 @Table(name = "api_key")
@@ -26,7 +23,7 @@ data class ApiKey(
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    var userId: KomgaUser? = null,
+    var user: KomgaUser? = null,
 
     @NotBlank
     @Column(name = "pkey", nullable = false, unique = true)
@@ -37,8 +34,7 @@ data class ApiKey(
     var comment: String = "",
 ) : Auditable() {
 
-    // JPA-friendly default constructor
-    constructor() : this(id = 0, userId = null, pkey = "", comment = "")
+    constructor() : this(id = 0, user = null, pkey = "", comment = "")
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
