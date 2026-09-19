@@ -1,20 +1,22 @@
 package br.com.dindin.domain.model
 
+import jakarta.persistence.Column
+import jakarta.persistence.EntityListeners
+import jakarta.persistence.MappedSuperclass
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
-import java.time.LocalDateTime
-import jakarta.persistence.*
-import java.time.ZonedDateTime
+import java.time.Instant
 
+a
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
 abstract class Auditable {
     @CreatedDate
     @Column(name = "created_date", updatable = false, nullable = false)
-    open var createdDate: ZonedDateTime = ZonedDateTime.now()
+    open var createdDate: Instant = Instant.now()
 
     @LastModifiedDate
     @Column(name = "last_modified_date", nullable = false)
-    var lastModifiedDate: LocalDateTime? = null
+    var lastModifiedDate: Instant = Instant.now()
 }
