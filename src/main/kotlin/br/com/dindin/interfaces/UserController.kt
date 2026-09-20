@@ -1,7 +1,6 @@
 package br.com.dindin.interfaces
 
 import br.com.dindin.domain.model.AgeRestriction
-import br.com.dindin.domain.model.AllowExcludeDto
 import br.com.dindin.domain.model.ContentRestrictions
 import br.com.dindin.domain.model.DuplicateNameException
 import br.com.dindin.domain.model.KomgaUser
@@ -118,11 +117,12 @@ class UserController(
     ) {
         userRepository.findByIdOrNull(id)?.let { existing ->
             val updatedUser = with(patch) {
+                val ageRestrictionValue = ageRestriction
                 val newAgeRestriction = if (isSet("ageRestriction")) {
-                    if (ageRestriction == null || ageRestriction.restriction == AllowExcludeDto.NONE) {
+                    if (ageRestrictionValue == null || ageRestrictionValue.restriction == AllowExcludeDto.NONE) {
                         null
                     } else {
-                        AgeRestriction.fromMinAge(ageRestriction.age)
+                        AgeRestriction.fromMinAge(ageRestrictionValue.age)
                     }
                 } else {
                     existing.restrictions.ageRestriction
