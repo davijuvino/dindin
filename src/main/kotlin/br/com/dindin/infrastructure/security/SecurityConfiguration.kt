@@ -52,18 +52,10 @@ class SecurityConfiguration(
                 auth
                     .requestMatchers(EndpointRequest.toAnyEndpoint()).hasRole("ADMIN")
                     .requestMatchers("/h2-console/**").permitAll()
-                    .requestMatchers("/api/v1/users").permitAll()
-                    .anyRequest().permitAll()
+                    .requestMatchers("/api/v1/users", "/api/v1/users/login", "/api/v1/users/register").permitAll()
+                    .anyRequest().authenticated()
             }
             .httpBasic { basic -> basic.realmName("Komga") }
-            .logout { logout ->
-                logout
-                    .logoutUrl("/api/v1/users/logout")
-                    .logoutSuccessUrl("/")
-                    .deleteCookies("JSESSIONID", "SESSION")
-                    .clearAuthentication(true)
-                    .invalidateHttpSession(true)
-            }
             .sessionManagement { session ->
                 session
                     .maximumSessions(10)
