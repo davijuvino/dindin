@@ -3,29 +3,33 @@ package br.com.dindin.domain.model
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import java.time.Instant
-import java.time.ZonedDateTime
 
 @Entity
 @Table(name = "sync_points")
 open class SyncPoint(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0,
+    open var id: Long = 0,
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    var user: KomgaUser? = null,
+    open var user: KomgaUser? = null,
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "api_key_id", nullable = true)
-    var apiKey: ApiKey? = null,
+    open var apiKey: ApiKey? = null,
 
     @Column(name = "created_date", nullable = false)
-    override var createdDate: Instant? = Instant.now()
+    override open var createdDate: Instant? = Instant.now(),
 ) : Auditable() {
 
-    constructor() : this(id = 0, user = null, apiKey = null, createdDate = ZonedDateTime.now() as Instant?)
+    constructor() : this(
+        id = 0,
+        user = null,
+        apiKey = null,
+        createdDate = Instant.now(),
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
